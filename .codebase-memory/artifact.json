@@ -1,0 +1,11 @@
+{
+    "schema_version": 2,
+    "commit": "f4c60f6c4125b119fe71c5f6a378d62015416b79",
+    "indexed_at": "2026-11-14T17:12:05Z",
+    "project": "D-Kartika",
+    "nodes": 328,
+    "edges": 693,
+    "original_size": 3735552,
+    "compressed_size": 348680,
+    "compression_level": 3
+}

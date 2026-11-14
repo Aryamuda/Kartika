@@ -1,0 +1,7 @@
+[mcp_servers.codebase_memory]
+command = 'C:\Users\LENOVO\AppData\Local\Temp\CodebaseMemory\codebase-memory-mcp.exe'
+args = []
+startup_timeout_sec = 120
+
+[mcp_servers.codebase_memory.env]
+CODEBASE_MEMORY_PROJECT_ROOT = 'D:\Kartika'
