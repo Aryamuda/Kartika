@@ -1,0 +1,132 @@
+{
+  "sites": [
+    {
+      "id": "site-jkt",
+      "name": "HQ Site, Jakarta",
+      "note": "Synthetic location",
+      "lat": -6.2088,
+      "lon": 106.8456
+    },
+    {
+      "id": "site-bdg",
+      "name": "Control Site, Bandung",
+      "note": "Synthetic location",
+      "lat": -6.9175,
+      "lon": 107.6191
+    }
+  ],
+  "assets": [
+    {
+      "id": "SRV-APP",
+      "hostname": "srv-app-01",
+      "ips": ["10.10.10.20"],
+      "type": "server",
+      "segment": "seg-corp",
+      "site": "site-jkt",
+      "criticality": "medium",
+      "os": "Ubuntu 22.04 LTS",
+      "role": "Operator portal application server",
+      "owner": "Operations Support Unit",
+      "agent_id": "001",
+      "tags": ["portal", "internet-facing"]
+    },
+    {
+      "id": "SRV-DB",
+      "hostname": "srv-db-01",
+      "ips": ["10.20.20.10"],
+      "type": "server",
+      "segment": "seg-ops",
+      "site": "site-bdg",
+      "criticality": "high",
+      "os": "Debian 12",
+      "role": "Telemetry historian database",
+      "owner": "Control Systems Unit",
+      "agent_id": "002",
+      "tags": ["database", "historian"]
+    },
+    {
+      "id": "SRV-SCADA",
+      "hostname": "srv-scada-01",
+      "ips": ["10.20.20.11"],
+      "type": "server",
+      "segment": "seg-ops",
+      "site": "site-bdg",
+      "criticality": "critical",
+      "os": "Ubuntu 22.04 LTS",
+      "role": "SCADA control gateway (Modbus/TCP)",
+      "owner": "Control Systems Unit",
+      "agent_id": "003",
+      "tags": ["ot", "modbus", "control"]
+    },
+    {
+      "id": "WS-01",
+      "hostname": "ws-01",
+      "ips": ["10.10.10.101"],
+      "type": "endpoint",
+      "segment": "seg-corp",
+      "site": "site-jkt",
+      "criticality": "low",
+      "os": "Ubuntu 22.04 Desktop",
+      "role": "Staff workstation",
+      "owner": "Operations Support Unit",
+      "agent_id": "004",
+      "tags": ["workstation"]
+    },
+    {
+      "id": "WS-02",
+      "hostname": "ws-02",
+      "ips": ["10.10.10.102"],
+      "type": "endpoint",
+      "segment": "seg-corp",
+      "site": "site-jkt",
+      "criticality": "low",
+      "os": "Ubuntu 22.04 Desktop",
+      "role": "Staff workstation",
+      "owner": "Operations Support Unit",
+      "agent_id": "005",
+      "tags": ["workstation"]
+    },
+    {
+      "id": "WS-OPS-01",
+      "hostname": "ws-ops-01",
+      "ips": ["10.20.20.101"],
+      "type": "endpoint",
+      "segment": "seg-ops",
+      "site": "site-bdg",
+      "criticality": "medium",
+      "os": "Ubuntu 22.04 Desktop",
+      "role": "Control room operator station",
+      "owner": "Control Systems Unit",
+      "agent_id": "006",
+      "tags": ["operator", "ot"]
+    },
+    {
+      "id": "WS-OPS-02",
+      "hostname": "ws-ops-02",
+      "ips": ["10.20.20.102"],
+      "type": "endpoint",
+      "segment": "seg-ops",
+      "site": "site-bdg",
+      "criticality": "medium",
+      "os": "Ubuntu 22.04 Desktop",
+      "role": "Control room operator station",
+      "owner": "Control Systems Unit",
+      "agent_id": "007",
+      "tags": ["operator", "ot"]
+    },
+    {
+      "id": "FW-01",
+      "hostname": "fw-01",
+      "ips": ["10.10.10.1", "10.20.20.1"],
+      "type": "firewall",
+      "segment": "boundary",
+      "site": "site-jkt",
+      "criticality": "high",
+      "os": "Linux nftables gateway",
+      "role": "Segment boundary firewall",
+      "owner": "Network Security Unit",
+      "agent_id": null,
+      "tags": ["firewall", "boundary"]
+    }
+  ]
+}

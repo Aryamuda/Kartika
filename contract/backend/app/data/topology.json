@@ -1,0 +1,63 @@
+{
+  "segments": [
+    {"id": "seg-corp", "name": "Corporate segment", "cidr": "10.10.10.0/24", "site": "site-jkt"},
+    {"id": "seg-ops", "name": "Operations segment", "cidr": "10.20.20.0/24", "site": "site-bdg"}
+  ],
+  "nodes": [
+    {"id": "EXT-C2", "label": "203.0.113.45", "type": "external", "ips": ["203.0.113.45"], "segment": null, "pos": {"x": 0, "y": 150}},
+    {"id": "WS-01", "type": "endpoint", "segment": "seg-corp", "pos": {"x": 200, "y": 40}},
+    {"id": "WS-02", "type": "endpoint", "segment": "seg-corp", "pos": {"x": 200, "y": 260}},
+    {"id": "SRV-APP", "type": "server", "segment": "seg-corp", "pos": {"x": 360, "y": 150}},
+    {"id": "FW-01", "type": "firewall", "segment": null, "pos": {"x": 560, "y": 150}},
+    {"id": "SRV-DB", "type": "server", "segment": "seg-ops", "pos": {"x": 760, "y": 40}},
+    {"id": "SRV-SCADA", "type": "server", "segment": "seg-ops", "pos": {"x": 760, "y": 260}},
+    {"id": "WS-OPS-01", "type": "endpoint", "segment": "seg-ops", "pos": {"x": 940, "y": 40}},
+    {"id": "WS-OPS-02", "type": "endpoint", "segment": "seg-ops", "pos": {"x": 940, "y": 260}}
+  ],
+  "flows": [
+    {"id": "f01", "src": "WS-01", "dst": "SRV-APP", "port": 443, "proto": "tcp", "label": "Portal access (HTTPS)"},
+    {"id": "f02", "src": "WS-02", "dst": "SRV-APP", "port": 443, "proto": "tcp", "label": "Portal access (HTTPS)"},
+    {"id": "f03", "src": "SRV-APP", "dst": "SRV-DB", "port": 5432, "proto": "tcp", "label": "Portal backend queries historian"},
+    {"id": "f04", "src": "WS-OPS-01", "dst": "SRV-DB", "port": 5432, "proto": "tcp", "label": "Operator historian queries"},
+    {"id": "f05", "src": "SRV-SCADA", "dst": "SRV-DB", "port": 5432, "proto": "tcp", "label": "Process data logging to historian"},
+    {"id": "f06", "src": "WS-OPS-01", "dst": "SRV-SCADA", "port": 502, "proto": "tcp", "label": "Operator control (Modbus/TCP)"},
+    {"id": "f07", "src": "WS-OPS-02", "dst": "SRV-SCADA", "port": 502, "proto": "tcp", "label": "Operator control (Modbus/TCP)"},
+    {"id": "f08", "src": "SRV-APP", "dst": "SRV-SCADA", "port": 502, "proto": "tcp", "label": "Portal SCADA status read (Modbus/TCP, legacy rule)"},
+    {"id": "f09", "src": "SRV-APP", "dst": "EXT-C2", "port": 443, "proto": "tcp", "label": "Outbound HTTPS (default egress)"},
+    {"id": "f10", "src": "EXT-C2", "dst": "SRV-APP", "port": 443, "proto": "tcp", "label": "Inbound HTTPS to portal (published service)"}
+  ],
+  "services": [
+    {
+      "id": "svc-portal",
+      "name": "Operator Portal",
+      "host": "SRV-APP",
+      "port": 443,
+      "criticality": "high",
+      "consumers": ["WS-01", "WS-02"],
+      "depends_on": [
+        {"service": "svc-hist", "required": true, "via_flow": "f03", "note": "telemetry queries"},
+        {"service": "svc-scada", "required": false, "via_flow": "f08", "note": "live SCADA status panel"}
+      ]
+    },
+    {
+      "id": "svc-hist",
+      "name": "Telemetry Historian",
+      "host": "SRV-DB",
+      "port": 5432,
+      "criticality": "high",
+      "consumers": ["WS-OPS-01"],
+      "depends_on": []
+    },
+    {
+      "id": "svc-scada",
+      "name": "SCADA Control Gateway",
+      "host": "SRV-SCADA",
+      "port": 502,
+      "criticality": "critical",
+      "consumers": ["WS-OPS-01", "WS-OPS-02"],
+      "depends_on": [
+        {"service": "svc-hist", "required": false, "via_flow": "f05", "note": "process data logging"}
+      ]
+    }
+  ]
+}
