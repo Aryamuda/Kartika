@@ -3,7 +3,7 @@
 Deadline: submission closes 15 Nov 2026 (cutoff time unconfirmed, ask in the WhatsApp group). Plan to submit by 22:00 WIB.
 Rule: build against `CONTRACT.md`. Any change to a shape means editing `models.py` and `types.ts` together and telling the others.
 
-Owners: **A** = Arya (Cyber Twin + reports), **B** = frontend, **C** = API, deploy, submission assets.
+Owners: **A** = Cyber Twin, **B** = frontend, **C** = API, deploy, submission assets, and reports.
 
 ## Tonight (Sat 14 Nov), target 01:00
 - [ ] **C** `backend/app/main.py`: read endpoints over `Store` (`/api/overview`, `/assets`, `/topology`, `/events`, `/events/{id}`, `/incidents`, `/incidents/{id}`), CORS on. Push by 23:00 so B is unblocked.
