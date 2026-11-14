@@ -66,5 +66,6 @@ No autonomous prevention, no attack prediction, no production-grade digital repl
 - Nine backend tests pass, including actual HTTP integration, ingest/replay, invalid requests, and escaped report output.
 - Browser checks against the real lab API passed for all three presets and report download, without mock responses.
 - Frontend build is in `frontend/dist/`; run/deployment instructions and verification evidence are in `frontend/README.md` and `frontend/VERIFICATION.md`.
-- [ ] **B** Push `feat/aldi-frontend` after approval and open a PR for Fadil/Arya to review. No push or PR has been made.
+- [x] **B** Push `feat/aldi-frontend` after approval and open [draft PR #1](https://github.com/Aryamuda/Kartika/pull/1) for Fadil/Arya to review.
+- [ ] **A + C** Review draft PR #1, resolve feedback, and approve merging into main.
 - Public deployment, video, slides, and submission remain outstanding.

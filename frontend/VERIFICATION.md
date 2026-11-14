@@ -33,7 +33,7 @@ Pemeriksaan browser memakai API lab terpisah pada port 8011 agar reset tidak mem
 - Pengujian awal frontend memakai mock untuk simulator/laporan. Setelah integrasi, endpoint asli juga diuji melalui HTTP dan browser tanpa mock: A memberi pembatasan 1,0/ketersediaan 0,75; B 0,833333/0,875; C 0,75/0,75. Semua merupakan hasil model kebijakan pada fixture sintetis, bukan validasi tingkat paket.
 - Audit kontras otomatis mencakup teks CSS opak; tidak mencakup SVG, kontrol nonaktif, dan teks khusus pembaca layar. Pasangan teks SVG dan batas kontrol diperiksa terpisah menggunakan rumus luminans WCAG.
 - Pengujian keyboard dilakukan di Chromium melalui Playwright. Uji pembaca layar, Safari/Firefox, beban produksi, Lighthouse, dan deployment publik belum dilakukan.
-- Tidak ada push, perubahan rahasia, ataupun publikasi yang dilakukan. Identitas commit lokal memakai identitas yang diberikan pengguna, tanpa mengubah konfigurasi Git global.
+- Branch `feat/aldi-frontend` sudah dipush setelah persetujuan pengguna dan [draft PR #1](https://github.com/Aryamuda/Kartika/pull/1) dibuka. Belum ada merge ke main atau deployment publik. Identitas commit memakai identitas yang diberikan pengguna, tanpa mengubah rahasia atau konfigurasi Git global.
 
 ## Integrasi yang diuji
 
