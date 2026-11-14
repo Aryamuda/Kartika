@@ -48,6 +48,19 @@ class TwinTests(unittest.TestCase):
         self.assertEqual(result.security_impact["malicious_blocked"], 0)
         self.assertNotIn("WS-01", result.reachability["compromised_reach_before"])
 
+    def test_response_types_match_frontend_contract(self):
+        results = compare(presets(self.incident), self.incident, self.topology, self.assets).results
+        for result in results:
+            for field in ("pairs_before", "pairs_after"):
+                with self.subTest(scenario=result.scenario_name, field=field):
+                    self.assertIs(type(result.reachability[field]), int)
+            with self.subTest(scenario=result.scenario_name, field="legit_flows_removed"):
+                self.assertIs(type(result.collateral["legit_flows_removed"]), int)
+            for phase in ("before", "after"):
+                for row in result.reachability["matrix"][phase]:
+                    self.assertTrue(all(type(value) is int and value in (0, 1) for value in row))
+        self.assertEqual(results[0].isolation["remaining_flows"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()

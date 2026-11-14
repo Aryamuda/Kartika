@@ -7,7 +7,9 @@ from typing import Any
 from fastapi import Body, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-from .models import Asset, Event, Incident, Overview
+from . import twin
+from .models import Asset, CompareRequest, CompareResult, Event, Incident, Intervention, Overview, SimulateRequest, SimulationResult
+from .reports import build_report
 from .store import Store
 
 
@@ -176,3 +178,45 @@ def reset_replay() -> dict[str, Any]:
 def step_replay(n: int = Query(default=1, ge=1)) -> dict[str, Any]:
     store.step(n)
     return store.replay_status()
+
+
+@app.get("/api/twin/presets", response_model=list[Intervention])
+def get_twin_presets(incident_id: str = Query(...)) -> list[Intervention]:
+    return twin.presets(get_incident(incident_id))
+
+
+@app.post("/api/twin/simulate", response_model=SimulationResult)
+def simulate_response(payload: SimulateRequest) -> SimulationResult:
+    with store.lock:
+        incident = get_incident(payload.incident_id)
+        try:
+            return twin.simulate(payload.intervention, incident, store.topology, store.ctx.assets)
+        except ValueError as error:
+            raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+def _comparison(payload: CompareRequest) -> tuple[dict, CompareResult]:
+    if not payload.interventions:
+        raise HTTPException(status_code=422, detail="Pilih setidaknya satu intervensi.")
+    with store.lock:
+        incident = get_incident(payload.incident_id)
+        try:
+            result = twin.compare(payload.interventions, incident, store.topology, store.ctx.assets)
+        except ValueError as error:
+            raise HTTPException(status_code=422, detail=str(error)) from error
+    return incident, result
+
+
+@app.post("/api/twin/compare", response_model=CompareResult)
+def compare_responses(payload: CompareRequest) -> CompareResult:
+    return _comparison(payload)[1]
+
+
+@app.post("/api/reports", response_model=dict[str, str])
+def create_report(payload: CompareRequest) -> dict[str, str]:
+    # Keep the comparison and evidence on the same snapshot during replay resets.
+    with store.lock:
+        incident, comparison = _comparison(payload)
+        members = set(incident["event_ids"])
+        events = [_event_view(event) for event in store.events if event["id"] in members]
+    return build_report(incident, comparison, events)
