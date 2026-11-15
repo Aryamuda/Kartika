@@ -35,7 +35,7 @@ Raw record -> `normalize_*` (store.py) -> Event (raw kept, SHA-256 + parser in `
 | POST | `/api/twin/compare` | `CompareRequest` -> `CompareResult` |
 | POST | `/api/reports` | `CompareRequest` -> `{filename, markdown, html}` |
 
-Endpoints are not implemented yet except through `Store` (store.py). Twin and reports follow the shapes above.
+Read/replay endpoints and Twin/report integration are implemented in `backend/app/main.py`. The Twin engine is in `twin.py`; the minimal Markdown/printable HTML export is in `reports.py`.
 
 ## Twin rules (so frontend and engine agree)
 - Graph = `topology.flows` (edge = permitted flow). Interventions only remove flows; isolating an asset removes every flow touching it.
@@ -43,6 +43,7 @@ Endpoints are not implemented yet except through `Store` (store.py). Twin and re
 - Service status: host isolated -> `down`. Required dependency flow lost -> `down`. Optional dependency lost -> `degraded`. Some consumers lost -> `degraded`, all lost -> `down`. The isolated target is not counted as a consumer.
 - Scores: containment = 0.5 x malicious blocked + 0.5 x reduction of weighted internal reach (low 1, medium 2, high 4, critical 8). Availability = 1 - weighted service impact (down 1, degraded 0.5) / total. Indicative only, not a recommendation.
 - Always return `limitations`: results come from declared policy, not packet-level validation.
+- Response counts (`pairs_before`, `pairs_after`, `remaining_flows`, `legit_flows_removed`) are integers; reachability matrix cells are numeric 0/1, matching `frontend/src/types.ts`. Full removed-flow records remain in `removed_flows`.
 
 ## Expected demo results (INC-0001) to test against
 | Scenario | Flows removed | Malicious blocked | Compromised can still reach | Services |

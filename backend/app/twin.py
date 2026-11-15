@@ -34,10 +34,10 @@ def _graph(topology: dict) -> nx.DiGraph:
     return graph
 
 
-def _reach(graph: nx.DiGraph, nodes: list[str]) -> tuple[list[list[str]], list[list[bool]]]:
+def _reach(graph: nx.DiGraph, nodes: list[str]) -> tuple[int, list[list[int]]]:
     reachable = {n: nx.descendants(graph, n) for n in nodes}
-    pairs = [[src, dst] for src in nodes for dst in nodes if dst in reachable[src]]
-    matrix = [[dst == src or dst in reachable[src] for dst in nodes] for src in nodes]
+    pairs = sum(dst in reachable[src] for src in nodes for dst in nodes)
+    matrix = [[int(dst == src or dst in reachable[src]) for dst in nodes] for src in nodes]
     return pairs, matrix
 
 
@@ -136,14 +136,14 @@ def simulate(intervention: Intervention, incident: dict, topology: dict,
         reachability={"pairs_before": pairs_before, "pairs_after": pairs_after,
                       "compromised_reach_before": reach_before, "compromised_reach_after": reach_after,
                       "matrix": {"assets": nodes, "before": matrix_before, "after": matrix_after}},
-        isolation={"target": isolated, "isolated": True, "remaining_flows": []} if isolated else None,
+        isolation={"target": isolated, "isolated": True, "remaining_flows": 0} if isolated else None,
         service_availability=services,
         security_impact={"malicious_total": len(malicious), "malicious_blocked": len(blocked),
                          "remaining_flow_ids": sorted(malicious - blocked),
                          "threat_path_interrupted": bool(malicious) and malicious <= blocked,
                          "critical_reachable_before": sorted(a for a in internal_before if assets[a]["criticality"] == "critical"),
                          "critical_reachable_after": sorted(a for a in internal_after if assets[a]["criticality"] == "critical")},
-        collateral={"legit_flows_removed": sorted(removed - malicious),
+        collateral={"legit_flows_removed": len(removed - malicious),
                     "services_impacted": [s["service_id"] for s in services if s["after"] != "available"],
                     "assets_affected": affected},
         scores={"containment": round(containment, 6), "availability": round(availability, 6),
