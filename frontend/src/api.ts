@@ -8,15 +8,12 @@ export class ApiError extends Error {
   }
 }
 
-let operatorToken = "";
-export function setOperatorToken(value: string) { operatorToken = value; }
-
 const base = (import.meta.env?.VITE_API_BASE_URL ?? '').replace(/\/$/, '');
 
 export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`${base}/api${path}`, {
     ...init,
-    headers: { Accept: 'application/json', ...(operatorToken && path.startsWith('/ingest/') ? { Authorization: `Bearer ${operatorToken}` } : {}), ...(init.body ? { 'Content-Type': 'application/json' } : {}), ...init.headers },
+    headers: { Accept: 'application/json', ...(init.body ? { 'Content-Type': 'application/json' } : {}), ...init.headers },
     signal: init.signal ?? AbortSignal.timeout(15000),
   });
   if (!response.ok) {

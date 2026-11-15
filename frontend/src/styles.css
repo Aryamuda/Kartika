@@ -324,3 +324,4 @@ dialog { width: min(800px, calc(100vw - 32px)); max-height: calc(100dvh - 48px);
   .graph-assets .chip { min-height: 44px; }
   .policy-pane-heading { align-items: start; flex-direction: column; gap: 6px; }
 }
+@media (max-width: 760px) { .snapshot-label { display: none; } }

@@ -1,5 +1,9 @@
 # Verifikasi frontend COIP
 
+## Integrasi sebelum push UI
+
+Branch UI menggabungkan origin/main hingga `cd01dd5` (replay publik melalui flag dan kolom token dihapus sesuai perubahan tim). Setelah konflik diselaraskan: `npm.cmd run build` PASS; `npm.cmd test` PASS 14 tes; `python -B -W error::ResourceWarning -m unittest discover -s backend/tests -q` PASS 17 tes. Smoke browser filter Bandung dan pembukaan JSON bukti kembali berhasil. Replay publik pada hosting belum diperiksa ulang; bukti lama tentang kolom token bersifat historis.
+
 Tanggal: 15 November 2026, WIB. Lingkup: frontend B dan integrasi lokal setelah pembaruan Fadil `1dbd4c1` digabungkan pada branch `feat/aldi-frontend`. Model Python dan `src/types.ts` dipertahankan. Backend kini memiliki penghubung API dan ekspor minimal; serialisasi hasil Twin diselaraskan dengan kontrak tanpa mengubah rumus skor.
 
 ## Adaptasi UI referensi SOC (lokal, 15 November 2026)
@@ -73,7 +77,11 @@ Pemeriksaan browser memakai API lab terpisah pada port 8011 agar reset tidak mem
 
 `checkFrontend` memeriksa metrik fixture 2 insiden/8 aset/19 peristiwa/3 aset perlu ditinjau, pencarian kosong, filter sumber/keparahan, pengurutan, rekaman JSON, fokus dialog, Escape, pemulihan fokus, pemfilteran graf, tautan insiden kedua, detail aset, reset yang dikonfirmasi/dibatalkan, pemuatan ulang skenario, pengurangan gerak, koneksi gagal/pulih, dan tautan lewati navigasi. Respons 404 untuk layanan belum tersedia dan kegagalan jaringan sengaja diuji; hal tersebut dibedakan dari error JavaScript.
 
-## Batas bukti integrasi awal (historis)
+## Batas pemeriksaan perubahan setelah snapshot
+
+Hasil di atas mendokumentasikan versi sebelum akses replay publik ditambahkan. Perubahan `COIP_PUBLIC_DEMO_REPLAY`, cooldown reset anonim, dan penghapusan kolom token UI belum tercakup dalam hasil PASS tersebut.
+
+## Batas bukti
 
 - API baca dan pemutaran diuji dengan implementasi backend dan fixture repo yang sebenarnya.
 - Pengujian awal frontend memakai mock untuk simulator/laporan. Setelah integrasi, endpoint asli juga diuji melalui HTTP dan browser tanpa mock: A memberi pembatasan 1,0/ketersediaan 0,75; B 0,833333/0,875; C 0,75/0,75. Semua merupakan hasil model kebijakan pada fixture sintetis, bukan validasi tingkat paket.
