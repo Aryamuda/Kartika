@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { api, ApiError, errorMessage } from './api';
 import type { CoipEvent, Incident, Topology } from './types';
@@ -35,8 +35,8 @@ export function Notice({ children, error = false }: { children: ReactNode; error
   return <div className={`notice ${error ? 'notice-error' : ''}`} role={error ? 'alert' : 'status'}>{children}</div>;
 }
 
-export function Panel({ title, subtitle, action, children, className = '' }: { title: string; subtitle?: string; action?: ReactNode; children: ReactNode; className?: string }) {
-  return <section className={`panel ${className}`}><div className="panel-heading"><div><h2>{title}</h2>{subtitle && <p>{subtitle}</p>}</div>{action}</div>{children}</section>;
+export function Panel({ title, subtitle, action, children, className = '', id }: { title: string; subtitle?: string; action?: ReactNode; children: ReactNode; className?: string; id?: string }) {
+  return <section id={id} tabIndex={id ? -1 : undefined} className={`panel ${className}`}><div className="panel-heading"><div><h2>{title}</h2>{subtitle && <p>{subtitle}</p>}</div>{action}</div>{children}</section>;
 }
 
 export function Dialog({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
@@ -50,17 +50,17 @@ export function Dialog({ title, onClose, children }: { title: string; onClose: (
   return <dialog ref={ref} onCancel={event => { event.preventDefault(); onClose(); }} aria-labelledby="dialog-title"><div className="dialog-head"><h2 id="dialog-title">{title}</h2><button className="icon-button" onClick={onClose} aria-label="Tutup detail"><Icon name="close" /></button></div>{children}</dialog>;
 }
 
-export function EvidenceDialog({ eventId, onClose }: { eventId: string; onClose: () => void }) {
+export function EvidenceRecord({ eventId }: { eventId: string }) {
   const [event, setEvent] = useState<CoipEvent | null>(null);
   const [error, setError] = useState('');
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     let active = true;
     setError(''); setEvent(null);
-    api.event(eventId).then(value => { if (active) setEvent(value); }).catch(cause => { if (active) setError(cause instanceof ApiError && cause.status === 404 ? 'Peristiwa tidak ditemukan. Tutup detail dan perbarui data; skenario mungkin telah dimulai ulang.' : errorMessage(cause)); });
+    api.event(eventId).then(value => { if (active) setEvent(value); }).catch(cause => { if (active) setError(cause instanceof ApiError && cause.status === 404 ? 'Peristiwa tidak ditemukan. Perbarui data; skenario mungkin telah dimulai ulang.' : errorMessage(cause)); });
     return () => { active = false; };
   }, [eventId, attempt]);
-  return <Dialog title={`Bukti / ${eventId}`} onClose={onClose}>
+  return <>
     {error ? <Empty title="Bukti tidak tersedia" action={<button onClick={() => setAttempt(value => value + 1)}>Muat ulang bukti</button>}>{error}</Empty> : !event ? <p className="loading" role="status">Memuat peristiwa asli…</p> : <div className="dialog-body">
       <div className="flex flex-wrap gap-2 items-center"><Badge value={event.severity} /><span className="source-label">{event.source}</span><span className="muted">{formatDate(event.ts)} · {formatTime(event.ts)} WIB</span></div>
       <h3 className="detail-title">{event.title}</h3><p>{event.detail}</p><p className="muted">Pesan deteksi dan alasan korelasi ditampilkan sesuai teks sumber.</p>
@@ -70,7 +70,11 @@ export function EvidenceDialog({ eventId, onClose }: { eventId: string; onClose:
       <p className="muted">SHA-256 JSON kanonis mendukung pemeriksaan konsistensi; hash ini tidak membuktikan keaslian sumber.</p><code className="hash">{event.provenance.raw_sha256}</code>
       <h4>Rekaman asli</h4><pre className="raw-record" tabIndex={0} aria-label="Rekaman peristiwa JSON asli">{JSON.stringify(event.raw ?? {}, null, 2)}</pre>
     </div>}
-  </Dialog>;
+  </>;
+}
+
+export function EvidenceDialog({ eventId, onClose }: { eventId: string; onClose: () => void }) {
+  return <Dialog title={`Bukti / ${eventId}`} onClose={onClose}><EvidenceRecord key={eventId} eventId={eventId} /></Dialog>;
 }
 
 export function EventTable({ events, onEvidence }: { events: CoipEvent[]; onEvidence: (id: string) => void }) {
@@ -86,26 +90,41 @@ export function IncidentPicker({ incidents, value, onChange }: { incidents: Inci
   return <label className="field"><span>Investigasi</span><select value={value} onChange={event => onChange(event.target.value)}>{incidents.map(incident => <option key={incident.id} value={incident.id}>{incident.id} · {incident.primary_asset ?? 'Belum dipetakan'}</option>)}</select></label>;
 }
 
-export function NetworkGraph({ topology, incident, removed = [], onSelect, selected = '' }: { topology: Topology; incident?: Incident; removed?: string[]; onSelect?: (id: string) => void; selected?: string }) {
+export function NetworkGraph({ topology, incident, removed = [], onSelect, selected = '', eventId = '' }: { topology: Topology; incident?: Incident; removed?: string[]; onSelect?: (id: string) => void; selected?: string; eventId?: string }) {
+  const markerId = useId().replaceAll(':', '');
   const evidenceNodes = incident?.relationships.nodes ?? [];
+  const positions = new Map(topology.nodes.map(node => {
+    const column = node.type === 'external' || node.type === 'firewall' ? 0 : Math.max(0, topology.segments.findIndex(segment => segment.id === node.segment)) + 1;
+    const peers = topology.nodes.filter(item => (column === 0 ? item.type === 'external' || item.type === 'firewall' : item.segment === node.segment));
+    return [node.id, { x: 80 + column * 180, y: 35 + peers.findIndex(item => item.id === node.id) * 105 }];
+  }));
   const nodes = incident ? evidenceNodes.map((node, index) => {
-    const known = topology.nodes.find(item => item.id === node.id);
-    return { id: node.id, label: node.id, kind: node.kind === 'ioc' ? 'external' : node.type, x: known?.pos.x ?? index * 190, y: known?.pos.y ?? 150 };
-  }) : topology.nodes.map(node => ({ id: node.id, label: node.id, kind: node.type, x: node.pos.x, y: node.pos.y }));
-  const edges = incident ? incident.relationships.edges.map(edge => ({ id: edge.id, src: edge.source, dst: edge.target, label: `${edge.count} event${edge.count === 1 ? '' : 's'}`, removed: false })) : topology.flows.map(flow => ({ ...flow, label: `${flow.id} / ${flow.port}`, removed: removed.includes(flow.id) }));
-  const maxX = Math.max(940, ...nodes.map(node => node.x));
-  const maxY = Math.max(300, ...nodes.map(node => node.y));
+    const position = positions.get(node.id);
+    return { id: node.id, label: node.id, kind: node.kind === 'ioc' ? 'external' : node.type, x: position?.x ?? 80, y: position?.y ?? 245 + index * 65 };
+  }) : topology.nodes.map(node => ({ id: node.id, label: node.id, kind: node.type, ...positions.get(node.id)! }));
+  const edges = incident ? incident.relationships.edges.map(edge => ({ id: edge.id, src: edge.source, dst: edge.target, label: `${edge.count} bukti`, removed: false, highlighted: edge.event_ids.includes(eventId) })) : topology.flows.map(flow => ({ ...flow, label: `${flow.id} / ${flow.port}`, removed: removed.includes(flow.id), highlighted: false }));
+  const maxX = Math.max(440, ...nodes.map(node => node.x));
+  const maxY = Math.max(350, ...nodes.map(node => node.y));
   return <div className="network-wrap"><div className="graph-legend"><span><i className="legend-line" />{incident ? 'Relasi teramati' : 'Alur diizinkan'}</span>{!incident && <span><i className="legend-line removed" />Dihapus oleh skenario</span>}<span className="muted">{incident ? 'Asosiasi bukti belum membuktikan kompromi' : 'Kebijakan jaringan yang dideklarasikan'}</span></div>
-    <svg className="network" viewBox={`-100 -15 ${maxX + 210} ${maxY + 90}`} role="img" aria-label={incident ? 'Relasi bukti insiden; detail tersedia di bawah' : 'Alur jaringan yang dideklarasikan; daftar aset tersedia di bawah'}>
-      <defs><marker id={incident ? 'evidence-arrow' : 'policy-arrow'} markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6" fill="currentColor" /></marker></defs>
-      {edges.map((edge, index) => {
+    <div className="graph-canvas" tabIndex={0} role="region" aria-label="Graf jaringan, geser mendatar bila diperlukan"><svg className="network" viewBox={`-5 -10 ${maxX + 85} ${maxY + 90}`} role="img" aria-label={incident ? 'Relasi bukti insiden; detail tersedia di bawah' : 'Alur jaringan yang dideklarasikan; daftar aset tersedia di bawah'}>
+      <defs><marker id={markerId} markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6" fill="currentColor" /></marker></defs>
+      {edges.map(edge => {
         const start = nodes.find(node => node.id === edge.src); const end = nodes.find(node => node.id === edge.dst);
         if (!start || !end) return null;
-        const offset = index % 2 ? 14 : -14;
-        return <g key={edge.id} className={`graph-edge ${edge.removed ? 'is-removed' : ''}`}><path d={`M${start.x} ${start.y + 24} Q${(start.x + end.x) / 2} ${(start.y + end.y) / 2 + offset} ${end.x} ${end.y + 24}`} markerEnd={`url(#${incident ? 'evidence-arrow' : 'policy-arrow'})`} /><text x={(start.x + end.x) / 2} y={(start.y + end.y) / 2 + offset / 2 + 15} textAnchor="middle">{edge.label}</text></g>;
+        const peers = edges.filter(item => (item.src === edge.src && item.dst === edge.dst) || (item.src === edge.dst && item.dst === edge.src));
+        const lane = (peers.findIndex(item => item.id === edge.id) - (peers.length - 1) / 2) * 34;
+        const vertical = start.x === end.x;
+        const direction = end.x > start.x ? 1 : -1;
+        const x1 = start.x + (vertical ? -62 : direction * 62);
+        const x2 = end.x + (vertical ? -62 : -direction * 62);
+        const y1 = start.y + 24, y2 = end.y + 24;
+        const control1 = vertical ? x1 - 65 - Math.abs(lane) : x1 + direction * 55;
+        const control2 = vertical ? x2 - 65 - Math.abs(lane) : x2 - direction * 55;
+        const path = `M${x1} ${y1} C${control1} ${y1 + lane} ${control2} ${y2 + lane} ${x2} ${y2}`;
+        return <g key={edge.id} className={`graph-edge ${edge.removed ? 'is-removed' : ''} ${edge.highlighted ? 'is-evidence-selected' : ''}`}><path d={path} markerEnd={`url(#${markerId})`} /><text x={vertical ? x1 - 52 - Math.abs(lane) : (x1 + x2) / 2} y={(y1 + y2) / 2 + lane * .75 - 6} textAnchor="middle">{edge.label}</text></g>;
       })}
       {nodes.map(node => <g key={node.id} transform={`translate(${node.x - 62},${node.y})`} className={`graph-node ${node.kind === 'external' ? 'external-node' : ''} ${selected === node.id ? 'selected-node' : ''}`}><rect width="124" height="49" rx="7" /><text x="62" y="21" textAnchor="middle">{node.label}</text><text x="62" y="37" textAnchor="middle" className="node-kind">{node.kind}</text></g>)}
-    </svg>
+    </svg></div>
     <div className="graph-assets" aria-label="Aset pada graf">{nodes.map(node => onSelect && (incident || node.kind !== 'external') ? <button key={node.id} className={selected === node.id ? 'chip selected' : 'chip'} aria-pressed={selected === node.id} onClick={() => onSelect(selected === node.id ? '' : node.id)}>{node.id}</button> : <span key={node.id} className="chip">{node.id}</span>)}</div>
   </div>;
 }
