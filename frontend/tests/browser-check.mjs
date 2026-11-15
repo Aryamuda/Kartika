@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 
-// Run only against an isolated synthetic lab: this checks the shared replay reset.
-export async function checkFrontend(page, origin, operatorToken) {
+// Run only against an isolated synthetic lab with COIP_PUBLIC_DEMO_REPLAY enabled:
+// this checks the shared replay reset.
+export async function checkFrontend(page, origin) {
   const pageErrors = [];
   const onError = error => pageErrors.push(error.message);
   page.on('pageerror', onError);
@@ -78,8 +79,6 @@ export async function checkFrontend(page, origin, operatorToken) {
     checks.push('Status layanan simulator/laporan yang belum tersedia');
 
     await nav('operations');
-    assert.ok(operatorToken, 'Provide the isolated backend operator token for replay checks');
-    await page.getByLabel('Token operator', { exact: true }).fill(operatorToken);
     await page.getByRole('button', { name: 'Ulangi', exact: true }).click();
     await page.getByRole('button', { name: 'Batal', exact: true }).click();
     assert.equal(await page.locator('.metric > strong').nth(2).innerText(), '19');

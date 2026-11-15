@@ -2,8 +2,11 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import math
 import os
 import secrets
+import threading
+import time
 from typing import Any
 
 from fastapi import Body, FastAPI, HTTPException, Query, Request
@@ -17,12 +20,42 @@ from .store import Store
 
 
 app = FastAPI(title="COIP API", version="0.1.0")
+
+_PUBLIC_DEMO_REPLAY_PATHS = frozenset({"/api/ingest/reset", "/api/ingest/step"})
+_PUBLIC_DEMO_REPLAY_COOLDOWN_SECONDS = 2.0
+_public_replay_lock = threading.Lock()
+_last_public_reset_at: float | None = None
+
+
+def _operator_token_is_valid(request: Request) -> bool:
+    token = os.getenv("COIP_OPERATOR_TOKEN", "")
+    supplied = request.headers.get("authorization", "")
+    return bool(token) and secrets.compare_digest(supplied.encode(), f"Bearer {token}".encode())
+
+
 @app.middleware("http")
 async def protect_ingestion(request: Request, call_next):
+    global _last_public_reset_at
     if request.method == "POST" and request.url.path.startswith("/api/ingest/"):
-        token = os.getenv("COIP_OPERATOR_TOKEN", "")
-        supplied = request.headers.get("authorization", "")
-        if not token or not secrets.compare_digest(supplied.encode(), f"Bearer {token}".encode()):
+        authorized = _operator_token_is_valid(request)
+        public_demo_replay = (
+            request.url.path in _PUBLIC_DEMO_REPLAY_PATHS
+            and os.getenv("COIP_PUBLIC_DEMO_REPLAY", "").strip().lower() in {"1", "true", "yes", "on"}
+        )
+        if public_demo_replay and not authorized and request.url.path == "/api/ingest/reset":
+            now = time.monotonic()
+            with _public_replay_lock:
+                if _last_public_reset_at is not None:
+                    remaining = _PUBLIC_DEMO_REPLAY_COOLDOWN_SECONDS - (now - _last_public_reset_at)
+                    if remaining > 0:
+                        retry_after = max(1, math.ceil(remaining))
+                        return JSONResponse(
+                            status_code=429,
+                            headers={"Retry-After": str(retry_after)},
+                            content={"detail": "Replay demo sedang dibatasi. Coba lagi sebentar."},
+                        )
+                _last_public_reset_at = now
+        elif not authorized and not public_demo_replay:
             return JSONResponse(status_code=403, content={"detail": "Token operator diperlukan untuk mengubah data."})
     return await call_next(request)
 

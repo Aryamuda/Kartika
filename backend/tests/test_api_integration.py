@@ -21,7 +21,7 @@ class ApiIntegrationTests(unittest.TestCase):
         cls.base = f"http://127.0.0.1:{port}"
         cls.process = subprocess.Popen(
             [sys.executable, "-B", "-m", "uvicorn", "backend.app.main:app", "--host", "127.0.0.1", "--port", str(port)],
-            env={**os.environ, "COIP_OPERATOR_TOKEN": "integration-test-token"},
+            env={**os.environ, "COIP_OPERATOR_TOKEN": "integration-test-token", "COIP_PUBLIC_DEMO_REPLAY": "false"},
             cwd=Path(__file__).resolve().parents[2], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         )
         cls.addCleanup(cls.stop_server)

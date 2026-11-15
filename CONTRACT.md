@@ -28,8 +28,8 @@ Raw record -> `normalize_*` (store.py) -> Event (raw kept, SHA-256 + parser in `
 | GET | `/api/events?asset=&source=&severity=` | `Event[]` (no raw) |
 | GET | `/api/events/{id}` | `Event` with `raw` |
 | GET | `/api/incidents`, `/api/incidents/{id}` | `Incident[]` / `Incident` |
-| POST | `/api/ingest/wazuh`, `/api/ingest/suricata` | body: one record or a list. Returns new event ids |
-| POST | `/api/ingest/reset` then `/api/ingest/step?n=1` | demo replay. Status in `Overview.replay` |
+| POST | `/api/ingest/wazuh`, `/api/ingest/suricata` | bearer token required; body: one record or a list. Returns new event ids |
+| POST | `/api/ingest/reset` then `/api/ingest/step?n=1` | demo replay. Public only when `COIP_PUBLIC_DEMO_REPLAY=true`; otherwise bearer token required. Status in `Overview.replay` |
 | GET | `/api/twin/presets?incident_id=` | `Intervention[]` |
 | POST | `/api/twin/simulate` | `SimulateRequest` -> `SimulationResult` |
 | POST | `/api/twin/compare` | `CompareRequest` -> `CompareResult` |
@@ -54,6 +54,6 @@ Read/replay endpoints and Twin/report integration are implemented in `backend/ap
 
 ## Mutation authorization and identity
 
-POST `/api/ingest/*` requires `Authorization: Bearer <COIP_OPERATOR_TOKEN>`. An absent backend token disables these writes (403). Configure `COIP_ALLOWED_ORIGINS` for the frontend origin. Read, simulation, and report endpoints remain read-only with respect to shared state.
+POST `/api/ingest/wazuh` and `/api/ingest/suricata` always require `Authorization: Bearer <COIP_OPERATOR_TOKEN>`; an absent backend token disables collector writes (403). Demo fixture reset and step can be made public with backend setting `COIP_PUBLIC_DEMO_REPLAY=true` (default: disabled); anonymous resets have a 2-second cooldown, while steps remain immediate so the demo can be replayed continuously. Public replay changes the shared in-memory workspace for every visitor, so any visitor can reset it. Configure `COIP_ALLOWED_ORIGINS` for the frontend origin. Read, simulation, and report endpoints remain read-only with respect to shared state.
 
 IDs are opaque strings. Initial fixture IDs retain the documented demo names. Subsequent events and new incidents use unique IDs, including after replay resets. Existing incident IDs survive late arrivals; merged incident IDs may return 404. Invalid ingestion batches return 422 without changing evidence, incidents, or the event log. Comparison scenario names must be unique.

@@ -27,6 +27,10 @@ Pemeriksaan browser memakai API lab terpisah pada port 8011 agar reset tidak mem
 
 `checkFrontend` memeriksa metrik fixture 2 insiden/8 aset/19 peristiwa/3 aset perlu ditinjau, pencarian kosong, filter sumber/keparahan, pengurutan, rekaman JSON, fokus dialog, Escape, pemulihan fokus, pemfilteran graf, tautan insiden kedua, detail aset, reset yang dikonfirmasi/dibatalkan, pemuatan ulang skenario, pengurangan gerak, koneksi gagal/pulih, dan tautan lewati navigasi. Respons 404 untuk layanan belum tersedia dan kegagalan jaringan sengaja diuji; hal tersebut dibedakan dari error JavaScript.
 
+## Batas pemeriksaan perubahan setelah snapshot
+
+Hasil di atas mendokumentasikan versi sebelum akses replay publik ditambahkan. Perubahan `COIP_PUBLIC_DEMO_REPLAY`, cooldown reset anonim, dan penghapusan kolom token UI belum tercakup dalam hasil PASS tersebut.
+
 ## Batas bukti
 
 - API baca dan pemutaran diuji dengan implementasi backend dan fixture repo yang sebenarnya.

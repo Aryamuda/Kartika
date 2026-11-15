@@ -1,10 +1,10 @@
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { filterEvents, formatDate, formatTime, incidentLabel, interventionLabel, siteSummary, sortEvents } from '../src/utils.ts';
-import { api, ApiError, errorMessage, request, setOperatorToken } from '../src/api.ts';
+import { api, ApiError, errorMessage, request } from '../src/api.ts';
 
 const originalFetch = globalThis.fetch;
-afterEach(() => { globalThis.fetch = originalFetch; setOperatorToken(''); });
+afterEach(() => { globalThis.fetch = originalFetch; });
 const events = [
   { id: 'EVT-1', source: 'wazuh', severity: 'high', title: 'Shell spawned', primary_asset: 'SRV-APP', src_ip: null, dst_ip: null, assets: [{ asset_id: 'SRV-APP' }] },
   { id: 'EVT-2', source: 'suricata', severity: 'medium', title: 'Network activity', primary_asset: null, src_ip: '203.0.113.45', dst_ip: '10.0.0.1', assets: [{ asset_id: 'SRV-SCADA' }] },
@@ -98,18 +98,14 @@ test('incident headings are Indonesian and tolerate unmapped assets', () => {
 });
 
 
-test('operator token is sent only to ingestion endpoints', async () => {
+test('replay requests do not add an operator token', async () => {
   const calls = [];
   globalThis.fetch = async (url, init) => {
     calls.push({ url, token: new Headers(init.headers).get('Authorization') });
     return new Response('{}', { headers: { 'Content-Type': 'application/json' } });
   };
-  setOperatorToken('test-token');
   await api.reset();
   await api.overview();
-  assert.equal(calls[0].token, 'Bearer test-token');
+  assert.equal(calls[0].token, null);
   assert.equal(calls[1].token, null);
-  setOperatorToken('');
-  await api.reset();
-  assert.equal(calls[2].token, null);
 });
