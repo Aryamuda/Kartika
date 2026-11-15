@@ -24,17 +24,18 @@ Checked items are implemented and verified locally unless public availability is
 - [x] **B** Infrastructure screen (asset registry + topology) + Cyber Twin screen (removed-flow graph, 3 preset buttons, comparison table, service status).
 - [x] **C** `/api/reports`: minimal Markdown/printable HTML export with incident summary, evidence timeline, scenario comparison table, and limitations. Actual report download verified.
 - [x] **C** Run/build/deployment integration instructions in `frontend/README.md`.
-- [ ] **C** Architecture diagram and slide outline.
+- [x] **C** Architecture diagram and slide outline (`docs/submission/architecture.md`, `slide-outline.md`).
 
 **16:00-18:00** Integration pass:
 - [x] Local frontend/API checks: 13 frontend tests, 9 backend tests, production build, and browser checks against real simulator/report endpoints.
-- [ ] Run the complete 10-scene demo against the blueprint and fix remaining breakages. The referenced blueprint is not present in this checkout.
+- [ ] Run the complete 10-scene demo against the blueprint and fix remaining breakages. The referenced blueprint is not present in this checkout. A provisional script is in `docs/submission/demo-storyboard-draft.md`; reconcile its order and duration when the official blueprint is available.
 
 **18:00 FEATURE FREEZE.**
 
 **18:00-21:00**
 - [ ] **C** Record the video following the 10-scene sequence (see blueprint section 6).
-- [ ] **C** Slides: problem, COIP, Cyber Twin, demo result, honest limits, next steps.
+- [x] **C** Slides: problem, COIP, Cyber Twin, demo result, honest limits, next steps (`docs/submission/dwirupa-submission-final-v2.pptx`).
+- [ ] Re-record UI scenes after the planned frontend redesign; this deck intentionally has no current-UI screenshots.
 - [x] **B** Local browser checks at 375, 768, 1024, and 1440 px, plus keyboard, dialog focus, empty/error states, and connection recovery.
 - [ ] **A + B** Final bug fixes, check the hosted URL works from a phone and an incognito window, no localhost links.
 
