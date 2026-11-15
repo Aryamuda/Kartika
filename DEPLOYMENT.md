@@ -16,16 +16,16 @@ Jalankan backend dari root repo dengan satu worker: `python -m uvicorn backend.a
 
 ## Pemeriksaan setelah deploy
 
-- [ ] Operasi memuat aset, insiden, dan event dari API; respons API bukan HTML fallback.
-- [ ] Bukti dapat dibuka dan memuat raw JSON beserta hash.
-- [ ] Tiga simulasi fixture awal memberikan trade-off berbeda: blokir 2/2, 2/2, dan 1/2; skenario C didominasi A.
-- [ ] Laporan investigasi berhasil diunduh.
-- [ ] POST reset/ingest tanpa token atau dengan token salah ditolak 403 tanpa mengubah data.
-- [ ] Dengan token benar, reset dan step berhasil. Lakukan hanya pada lab sintetis karena reset memengaruhi seluruh operator.
-- [ ] Setelah reset, referensi bukti lama memberikan 404; perbarui data sebelum investigasi berikutnya. ID baru adalah string opak, bukan nomor urut yang boleh ditebak.
-- [ ] UI tetap dapat dipakai pada ponsel dan tidak mencatat error JavaScript.
+- [x] Operasi memuat aset, insiden, dan event dari API; respons API bukan HTML fallback.
+- [x] Bukti dapat dibuka dan memuat raw JSON beserta hash.
+- [x] Tiga simulasi fixture awal memberikan trade-off berbeda: blokir 2/2, 2/2, dan 1/2; skenario C didominasi A.
+- [x] Laporan investigasi berhasil diunduh.
+- [x] POST ingest tanpa token ditolak 403 tanpa mengubah data. Salah token diuji lokal, belum di hosting.
+- [x] Dengan token benar, reset dan step berhasil. Lakukan hanya pada lab sintetis karena reset memengaruhi seluruh operator.
+- [x] Setelah reset, referensi bukti lama memberikan 404; perbarui data sebelum investigasi berikutnya. ID baru adalah string opak, bukan nomor urut yang boleh ditebak.
+- [x] UI tetap dapat dipakai pada ponsel dan tidak mencatat error JavaScript.
 
-Checklist deployment ini belum dieksekusi pada hosting Arya. Verifikasi lokal menggunakan API lab terisolasi; alamat deployment diperlukan untuk pemeriksaan hosting.
+Checklist diuji pada hosting Arya, https://dwirupa.duckdns.org, 15 November 2026. Rincian bukti dan batas pengujian ada di frontend/VERIFICATION.md. Ukuran ponsel diperiksa melalui emulasi viewport, bukan perangkat fisik. DNS normal pada jaringan presentasi masih perlu diperiksa karena uji terakhir memakai tunnel DNS sementara dengan validasi HTTPS tetap aktif.
 
 ## Kompatibilitas dan rollback
 

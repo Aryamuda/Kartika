@@ -2,7 +2,53 @@
 
 Tanggal: 15 November 2026, WIB. Lingkup: frontend B dan integrasi lokal setelah pembaruan Fadil `1dbd4c1` digabungkan pada branch `feat/aldi-frontend`. Model Python dan `src/types.ts` dipertahankan. Backend kini memiliki penghubung API dan ekspor minimal; serialisasi hasil Twin diselaraskan dengan kontrak tanpa mengubah rumus skor.
 
-## Hasil pemeriksaan
+## Adaptasi UI referensi SOC (lokal, 15 November 2026)
+
+Pembaruan layout Operasi: peta tengah dominan, ringkasan kiri, insiden kanan mulai 1280 px. `checkWorkspace` diperluas dan lulus untuk posisi panel serta kecocokan rasio SVG dengan kanvas pada 375/768/1024/1440/1920 px. Build, 14 tes frontend, dan diff check kembali lulus. Tidak ada pageerror selama pengujian workspace. Pada lebar sempit peta mendahului ringkasan dan antrean insiden dalam DOM maupun tampilan.
+
+Perubahan ini belum dipublikasikan. Hasil hosting pada bagian berikut mengacu pada versi sebelum adaptasi UI.
+
+| Pemeriksaan | Hasil |
+| --- | --- |
+| `npm.cmd run build` di frontend | PASS, TypeScript dan Vite. |
+| `npm.cmd test` di frontend | PASS, 14 tes. |
+| `git diff --check` | PASS. |
+| Playwright `checkWorkspace(page, origin)` dari `tests/workspace-browser-check.mjs` | PASS: filter lokasi dan deteksi, 38 bentuk provinsi, bukti/hash/JSON, sorotan graf, filter simpul, pergantian insiden, dan tiga konsekuensi berbeda. |
+| Playwright `checkLiveTwin(page, origin)` dari `tests/live-twin-browser-check.mjs` | PASS dengan API lokal asli: compare, tiga simulasi individual, pemilihan baris, dan unduh INC-0001.md; tidak ada pageerror. |
+| Lima halaman pada 375, 768, 1024, 1440, 1920 px | PASS tanpa overflow dokumen; tabel/graf punya scroll internal bila perlu. Ini viewport browser, bukan perangkat fisik. |
+| Retry dan koneksi | PASS: 404 bukti menampilkan pesan, retry setelah pemulihan membuka rekaman; API overview gagal lalu tersambung kembali. |
+| Keyboard | PASS: Tab tetap di dialog aset, Escape menutup; Baca bukti pada ponsel memindahkan fokus ke panel detail; reduced motion mematikan transisi. |
+| `auditTextContrast` di `tests/contrast-audit.mjs` | PASS untuk empat halaman Operasi/Investigasi/Infrastruktur/Laporan: 231/233/113/44 simpul teks CSS; minimum 4,59:1. SVG, kontrol disabled, dan teks screen-reader-only dikecualikan oleh checker. |
+| Kontras simulasi setelah compare | PASS: 189 simpul teks CSS, minimum 4,59:1; pemeriksaan tambahan 56 teks SVG, minimum 7,10:1. |
+
+Uji ini menggunakan backend lokal berisi fixture sintetis lengkap. Tidak ada reset deployment publik dalam pekerjaan UI ini. Tes backend tidak diulang karena kode backend/kontrak tidak diubah. Screenshot pemeriksaan tersimpan di `C:\Users\Hype AMD\coip-frontend-work\ui-final-*.png`. Gate Anti Slop berada di `UI-REVIEW.md`.
+
+## Pembaruan deployment dan perbaikan (15 November 2026)
+
+Bagian ini menggantikan status belum merge/deploy pada catatan integrasi awal di bawah. PR #1 dan PR #2 telah di-merge; PR #2 berujung pada merge commit `d389a86e31f47b733d28d72902184d38b4448046`. Perilaku deployment sesuai pemeriksaan perbaikan, tetapi server tidak menyediakan endpoint identitas commit untuk membuktikan hash build backend secara langsung.
+
+Domain aktif: https://dwirupa.duckdns.org. Domain lama `dwikarta.duckdns.org` tidak dipakai lagi karena sertifikat menyebut domain baru.
+
+| Pemeriksaan | Hasil yang diamati |
+| --- | --- |
+| Backend lokal, `python -B -W error::ResourceWarning -m unittest discover -s backend/tests -v` menggunakan venv proyek | PASS, 17 tes. Meliputi batch atomik, tipe tidak valid, ID stabil, flow paralel, protokol, konteks aset, nama skenario, dan otorisasi. |
+| Frontend lokal, `npm.cmd test` | PASS, 14 tes, termasuk batas pengiriman token. |
+| Frontend lokal, `npm.cmd run build` | PASS, TypeScript dan Vite. |
+| API hosting dan investigasi | HTTP 200; 19 event, 8 aset, 2 insiden; linimasa, relasi, raw JSON, dan hash dapat dibuka. |
+| Simulasi hosting | Tiga simulasi individual dan compare 200; blokir 2/2, 2/2, 1/2; sisa jangkauan kosong, SRV-DB, EXT-C2; Portal down/degraded/down; C didominasi A. |
+| Laporan hosting | Download Markdown berhasil; empat bagian laporan tersedia. |
+| Otorisasi hosting | Payload ingest kosong tanpa token ditolak 403, sebelum normalisasi. Ini tidak membuktikan konfigurasi token salah pada hosting; kasus salah token telah diuji lokal. |
+| Replay hosting dengan token valid, melalui UI Playwright | Reset 200 (0 termuat/19 tersisa), step 200 (1/18), muat sisa 200 (19/0). State akhir 19 event, 8 aset, 2 insiden; compare kembali 200 dengan 2/2/1 alur diblokir. |
+| Identitas setelah reset | Referensi EVT-0001 lama memberikan 404; bukan rekaman pengganti. |
+| Browser hosting | Lima halaman pada 375 dan 1440 px tidak melebar; tidak ada pageerror selama alur yang diperiksa. Bukan pengujian ponsel fisik. |
+
+Token tidak dicantumkan pada dokumen, output, atau rekaman. Konteks browser pengujian token ditutup setelah selesai. DNS resolver lokal sempat ENOTFOUND; DNS publik mengembalikan alamat deployment. Uji pada domain baru memakai tunnel lokal ke alamat terverifikasi dengan `ignoreHTTPSErrors: false`, sehingga hostname dan sertifikat HTTPS tetap divalidasi. Resolusi DNS biasa di perangkat juri belum terbukti.
+
+Belum diuji: konektor Wazuh/Suricata nyata, beban besar, akses ponsel fisik, pembaca layar, dan latihan tiga pembicara. Reset mengubah workspace bersama dan telah memuat ulang seluruh fixture; pengguna tab lama perlu memperbarui data.
+
+Naskah latihan B: [DEMO_ALDI.md](../DEMO_ALDI.md). Hasil sebelumnya tetap disimpan sebagai riwayat, bukan pemeriksaan yang diulang pada deployment terbaru.
+
+## Riwayat hasil integrasi awal
 
 | Pemeriksaan | Hasil | Bukti |
 |---|---|---|
@@ -27,7 +73,7 @@ Pemeriksaan browser memakai API lab terpisah pada port 8011 agar reset tidak mem
 
 `checkFrontend` memeriksa metrik fixture 2 insiden/8 aset/19 peristiwa/3 aset perlu ditinjau, pencarian kosong, filter sumber/keparahan, pengurutan, rekaman JSON, fokus dialog, Escape, pemulihan fokus, pemfilteran graf, tautan insiden kedua, detail aset, reset yang dikonfirmasi/dibatalkan, pemuatan ulang skenario, pengurangan gerak, koneksi gagal/pulih, dan tautan lewati navigasi. Respons 404 untuk layanan belum tersedia dan kegagalan jaringan sengaja diuji; hal tersebut dibedakan dari error JavaScript.
 
-## Batas bukti
+## Batas bukti integrasi awal (historis)
 
 - API baca dan pemutaran diuji dengan implementasi backend dan fixture repo yang sebenarnya.
 - Pengujian awal frontend memakai mock untuk simulator/laporan. Setelah integrasi, endpoint asli juga diuji melalui HTTP dan browser tanpa mock: A memberi pembatasan 1,0/ketersediaan 0,75; B 0,833333/0,875; C 0,75/0,75. Semua merupakan hasil model kebijakan pada fixture sintetis, bukan validasi tingkat paket.
@@ -110,3 +156,7 @@ Status berikut menilai frontend dalam lingkup di atas; bukan sertifikasi aksesib
 - R-29 PASS: palet netral/hijau dengan aksen utama dan warna semantik ancaman yang konsisten.
 - R-30 PASS: tidak menyalin referensi produk lain; tema diturunkan dari gaya CSV yang diminta.
 - R-31 PASS: alasan warna, tipografi, ruang, ikon, kartu preset, dan gerak tersedia dalam DESIGN.md.
+
+## Artefak cadangan demo
+
+Rekaman layar tanpa audio dibuat dari hosting dwirupa melalui konteks browser baru tanpa token, 1280 ? 900 px. Urutan: Operasi ? Investigasi ? raw bukti ? perbandingan tiga skenario ? Laporan. Laporan Markdown berhasil disimpan dan tidak ada pageerror pada konteks perekaman. Berkas lokal berada di folder coip-demo-backup/2026-11-15 milik Aldi, di luar repo agar video tidak membebani source control. Rekaman bukan video final kompetisi dan belum mencakup latihan tiga pembicara.

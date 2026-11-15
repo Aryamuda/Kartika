@@ -28,4 +28,21 @@ Dial: **ENERGY 1 / RHYTHM 2 / MOTION 1**. Fokus layar Operasi adalah antrean ins
 
 ## Batas lingkup
 
-Frontend tidak mengubah model bersama, menjalankan perubahan firewall, atau menambah inventaris senjata. Peta dan pembuat intervensi bebas tidak termasuk implementasi ini. Tiga preset dan ekspor minimal mengikuti kontrak API.
+Frontend tidak mengubah model bersama, menjalankan perubahan firewall, atau menambah inventaris senjata. Pembuat intervensi bebas tidak termasuk implementasi ini. Tiga preset dan ekspor minimal mengikuti kontrak API.
+
+## Adaptasi referensi konsol SOC (15 November 2026)
+
+- Peta operasi menampilkan batas provinsi dan dua lokasi sintetis dari API. Klik lokasi memfilter antrean insiden dan deteksi; daftar lokasi menjadi alternatif kontrol peta untuk keyboard dan layar sempit.
+- Data peta berasal dari berkas GeoJSON 38 provinsi milik pengguna. Garis disederhanakan untuk tampilan, bukan pengukuran geografis. Atribusi terlihat di panel; lisensi MIT disertakan dalam `public/LICENSE-geojson.txt` dan build.
+- Panel investigasi mengikuti pekerjaan operator: linimasa untuk memilih bukti, graf untuk memahami keterkaitan, dan panel kanan untuk memeriksa rekaman asli beserta hash. Pilihan simpul menyaring linimasa; pilihan bukti menyorot relasinya.
+- Tiga panel hadir ketika ruang desktop mencukupi. Pada lebar menengah detail berada di bawah graf; pada ponsel panel ditumpuk, dengan tombol Baca bukti yang memindahkan fokus ke detail.
+- Graf memakai kolom menurut segmen dan kurva yang masuk dari sisi simpul agar alur tidak terlihat melewati aset perantara yang sebenarnya tidak dilalui. Garis putus-putus menandai alur yang dihapus, sehingga perubahan tidak bergantung pada warna saja.
+- Simulasi menunjukkan Kebijakan awal dan Hasil simulasi berdampingan untuk menjelaskan perubahan, disertai status layanan sebelum/sesudah. Keduanya memakai model deklaratif yang sama; tidak ada label jaringan nyata, sinkronisasi sensor, latency, atau packet loss yang belum tersedia.
+- Metrik operasi menjadi satu strip ringkas agar antrean insiden tetap menjadi fokus. Aksen hijau menandai pilihan dan tindakan; merah/kuning menandai keparahan. Latar matte, font lokal, radius kecil, dan gerak terbatas mengikuti arah desain sebelumnya.
+- Wordmark teks memakai nama Dwirupa yang telah dipilih tim, dengan COIP sebagai konteks produk. Tidak ada logo atau ilustrasi baru.
+
+Dial tetap **ENERGY 1 / RHYTHM 2 / MOTION 1**.
+
+## Peta sebagai fokus Operasi
+
+Pilihan Aldi: peta utama di tengah, ringkasan di kiri dan antrean insiden di kanan. Pada desktop mulai 1280 px, kolom memakai 168 px / ruang tersisa / 252 px dengan sela 16 px. Ringkasan berupa daftar angka vertikal, pemutaran di bawahnya. Pada 900–1279 px, insiden turun di bawah dua kolom; di bawah 900 px urutan konten adalah peta, ringkasan, insiden, pemutaran. Peta berada pertama dalam DOM agar kontrol lokasi menjadi awal alur kerja. Kanvas mengikuti tinggi viewport yang dibatasi; batas geografis menyesuaikan rasio kanvas melalui ResizeObserver agar bentuk wilayah dan pin tetap sejajar tanpa peregangan.
