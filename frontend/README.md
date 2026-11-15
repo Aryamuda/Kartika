@@ -78,9 +78,17 @@ Lihat [VERIFICATION.md](./VERIFICATION.md) untuk hasil pemeriksaan dan batas ver
 
 Pemeriksaan browser yang dapat digunakan ulang tersedia sebagai fungsi penerima objek Playwright `page`:
 
-- `tests/browser-check.mjs`: `checkFrontend(page, origin)`, memeriksa alur utama dan koneksi gagal. Jalankan hanya pada backend lab terisolasi karena pengujian ini mengonfirmasi reset pemutaran.
+- `tests/browser-check.mjs`: `checkFrontend(page, origin, operatorToken)`, memeriksa alur utama dan koneksi gagal. Jalankan hanya pada backend lab terisolasi karena pengujian ini mengonfirmasi reset pemutaran.
 - `tests/twin-browser-check.mjs`: `checkTwinRendering(page, origin)`, memakai mock respons untuk menguji tiga hasil berbeda, payload permintaan, dan unduhan laporan.
 - `tests/live-twin-browser-check.mjs`: `checkLiveTwin(page, origin)`, memanggil API asli untuk ketiga preset dan laporan, tanpa memasang mock. Jalankan pada lab yang sudah memuat fixture INC-0001.
 - `tests/contrast-audit.mjs`: `auditTextContrast`, dijalankan dengan `page.evaluate(auditTextContrast)` untuk teks CSS opak. SVG, kontrol nonaktif, dan teks khusus pembaca layar dikecualikan.
 
 Fungsi tersebut dapat dipakai oleh runner Playwright yang sudah tersedia; paket Playwright tidak ditambahkan ke dependensi aplikasi. Pada pengerjaan ini, fungsi dijalankan melalui Playwright MCP.
+
+## Otorisasi operator
+
+Backend memerlukan `COIP_OPERATOR_TOKEN` untuk POST `/api/ingest/*`, termasuk reset dan step. Jika variabel kosong, operasi tersebut ditolak dengan 403. Tetapkan token melalui environment backend, lalu masukkan nilai yang sama pada kolom **Token operator** di UI. Token UI hanya disimpan dalam memori tab; masukkan kembali setelah reload. Jangan menaruh token dalam variabel `VITE_*`, repo, atau bundle publik. Gunakan HTTPS pada deployment.
+
+`COIP_ALLOWED_ORIGINS` adalah daftar origin frontend dipisahkan koma. Default: `http://127.0.0.1:5173,http://localhost:5173`. Isi dengan origin deployment yang sebenarnya; ini berbeda dari `VITE_API_BASE_URL`.
+
+Event yang diingest setelah startup memakai ID unik. Reset tidak menggunakan ulang ID bukti/insiden. Tautan dari sesi lama dapat menghasilkan 404; perbarui data sebelum melanjutkan investigasi. Pada penggabungan insiden, satu ID lama dipertahankan dan ID insiden yang digabung tidak dialihkan ke insiden lain.

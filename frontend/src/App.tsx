@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { api, errorMessage } from './api';
+import { api, errorMessage, setOperatorToken } from './api';
 import { Badge, Dialog, Empty, EventTable, EvidenceDialog, Icon, IncidentPicker, NetworkGraph, Notice, Panel } from './components';
 import type { Asset, CoipEvent, CompareResult, Incident, Intervention, Overview, SimulationResult, Topology } from './types';
 import { downloadText, filterEvents, formatDate, formatTime, incidentLabel, interventionLabel, siteSummary } from './utils';
@@ -79,7 +79,7 @@ export default function App() {
       <div className="sidebar-footer"><span className={`connection-dot ${data && !error ? 'connected' : ''}`} /><span>{data && !error ? 'API terhubung' : loading ? 'Menghubungkan API' : 'API tidak tersedia'}</span></div>
     </aside>
     <div className="main-shell">
-      <header className="topbar"><div className="breadcrumb">Ruang kerja <span>/</span> <strong>{currentPage.label}</strong></div><div className="topbar-meta"><span className="snapshot-label">{updated ? `Data ${formatTime(updated)} WIB` : 'Menunggu data'}</span><span className="operator-avatar" aria-label="Operator keamanan">OP</span></div></header>
+      <header className="topbar"><div className="breadcrumb">Ruang kerja <span>/</span> <strong>{currentPage.label}</strong></div><div className="topbar-meta"><input className="token-control" type="password" title="Diperlukan untuk reset dan pemutaran skenario. Disimpan hanya selama tab aktif." aria-label="Token operator" placeholder="Token operator" autoComplete="off" onChange={event => setOperatorToken(event.target.value)} /><span className="snapshot-label">{updated ? `Data ${formatTime(updated)} WIB` : 'Menunggu data'}</span><span className="operator-avatar" aria-label="Operator keamanan">OP</span></div></header>
       <main id="main" tabIndex={-1} aria-busy={loading}>
         <div className="page-heading"><div><p className="eyebrow">COIP / {route.page === 'twin' ? 'DUKUNGAN KEPUTUSAN' : 'OPERASI KEAMANAN SIBER'}</p><h1>{currentPage.label}</h1><p className="page-description">{currentPage.description}</p></div><button className="button secondary" onClick={() => void refresh()} disabled={loading || busy}><Icon name="refresh" size={16} />{loading ? 'Memuat…' : 'Perbarui data'}</button></div>
         {error && <Notice error>{data && 'Menampilkan data terakhir yang berhasil dimuat. '}{error} <button className="text-button" onClick={() => void refresh()} disabled={loading}>Hubungkan kembali</button></Notice>}

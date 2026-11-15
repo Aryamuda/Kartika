@@ -51,3 +51,9 @@ Read/replay endpoints and Twin/report integration are implemented in `backend/ap
 | A. Isolate SRV-APP | f01 f02 f03 f08 f09 f10 | 2/2 | nothing | Portal down |
 | B. Block observed (f08, f09) | f08 f09 | 2/2 | SRV-DB | Portal degraded |
 | C. Block SRV-APP -> Operations segment (f03, f08) | f03 f08 | 1/2 | EXT-C2 | Portal down. Dominated by A |
+
+## Mutation authorization and identity
+
+POST `/api/ingest/*` requires `Authorization: Bearer <COIP_OPERATOR_TOKEN>`. An absent backend token disables these writes (403). Configure `COIP_ALLOWED_ORIGINS` for the frontend origin. Read, simulation, and report endpoints remain read-only with respect to shared state.
+
+IDs are opaque strings. Initial fixture IDs retain the documented demo names. Subsequent events and new incidents use unique IDs, including after replay resets. Existing incident IDs survive late arrivals; merged incident IDs may return 404. Invalid ingestion batches return 422 without changing evidence, incidents, or the event log. Comparison scenario names must be unique.

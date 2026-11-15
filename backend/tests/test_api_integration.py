@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import socket
 import subprocess
 import sys
@@ -13,17 +14,17 @@ from urllib.request import Request, urlopen
 
 
 class ApiIntegrationTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
+    def setUp(cls):
         with socket.socket() as listener:
             listener.bind(("127.0.0.1", 0))
             port = listener.getsockname()[1]
         cls.base = f"http://127.0.0.1:{port}"
         cls.process = subprocess.Popen(
             [sys.executable, "-B", "-m", "uvicorn", "backend.app.main:app", "--host", "127.0.0.1", "--port", str(port)],
+            env={**os.environ, "COIP_OPERATOR_TOKEN": "integration-test-token"},
             cwd=Path(__file__).resolve().parents[2], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         )
-        cls.addClassCleanup(cls.stop_server)
+        cls.addCleanup(cls.stop_server)
         deadline = time.monotonic() + 10
         while time.monotonic() < deadline:
             try:
@@ -36,7 +37,6 @@ class ApiIntegrationTests(unittest.TestCase):
                 time.sleep(0.1)
         raise RuntimeError("API pengujian belum siap setelah 10 detik")
 
-    @classmethod
     def stop_server(cls):
         cls.process.terminate()
         try:
@@ -47,7 +47,7 @@ class ApiIntegrationTests(unittest.TestCase):
 
     def request(self, path, payload=None):
         body = None if payload is None else json.dumps(payload).encode("utf-8")
-        request = Request(self.base + path, data=body, headers={"Content-Type": "application/json"})
+        request = Request(self.base + path, data=body, headers={"Content-Type": "application/json", "Authorization": "Bearer integration-test-token"})
         try:
             with urlopen(request, timeout=5) as response:
                 return response.status, json.loads(response.read())
@@ -60,6 +60,30 @@ class ApiIntegrationTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(len(presets), 3)
         return {"incident_id": "INC-0001", "interventions": presets}
+
+    def test_mutations_require_token_and_reject_invalid_batches(self):
+        for authorization in (None, 'Bearer wrong-token'):
+            headers = {'Content-Type': 'application/json', 'Origin': 'http://localhost:5173'}
+            if authorization:
+                headers['Authorization'] = authorization
+            request = Request(self.base + '/api/ingest/reset', data=b'{}', headers=headers)
+            with self.assertRaises(HTTPError) as caught:
+                urlopen(request, timeout=5)
+            with caught.exception as error:
+                self.assertEqual(error.code, 403)
+                self.assertEqual(error.headers.get('access-control-allow-origin'), 'http://localhost:5173')
+        _, before = self.request('/api/overview')
+        record = json.loads((Path(__file__).resolve().parents[1] / 'app/data/wazuh_alerts.json').read_text())[0]
+        bad = {**record, 'rule': {**record['rule'], 'description': ['invalid']}}
+        for batch in ([record, {}], [bad]):
+            self.assertEqual(self.request('/api/ingest/wazuh', batch)[0], 422)
+            status, after = self.request('/api/overview')
+            self.assertEqual(status, 200)
+            self.assertEqual(before, after)
+        payload = self.comparison_payload()
+        payload['interventions'][0]['name'] = payload['interventions'][2]['name'] = 'same'
+        for path in ('/api/twin/compare', '/api/reports'):
+            self.assertEqual(self.request(path, payload)[0], 422)
 
     def test_actual_comparison_preserves_three_tradeoffs(self):
         status, comparison = self.request("/api/twin/compare", self.comparison_payload())

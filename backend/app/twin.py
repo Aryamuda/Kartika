@@ -101,10 +101,7 @@ def simulate(intervention: Intervention, incident: dict, topology: dict,
                    and assets.get(f["dst"], {}).get("segment") == intervention.segment}
 
     before = _graph(topology)
-    after = before.copy()
-    for fid in sorted(removed):
-        f = flows[fid]
-        after.remove_edge(f["src"], f["dst"])
+    after = _graph({**topology, "flows": [f for f in flows.values() if f["id"] not in removed]})
     nodes = sorted(before.nodes)
     pairs_before, matrix_before = _reach(before, nodes)
     pairs_after, matrix_after = _reach(after, nodes)
@@ -158,6 +155,9 @@ def simulate(intervention: Intervention, incident: dict, topology: dict,
 def compare(interventions: list[Intervention], incident: dict, topology: dict,
             assets: dict[str, dict]) -> CompareResult:
     results = [simulate(i, incident, topology, assets) for i in interventions]
+    names = [result.scenario_name for result in results]
+    if len(set(names)) != len(names):
+        raise ValueError("Scenario names must be unique")
     dominated = {}
     for i, candidate in enumerate(results):
         for j, other in enumerate(results):
