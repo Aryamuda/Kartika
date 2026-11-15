@@ -28,7 +28,7 @@ Checked items are implemented and verified locally unless public availability is
 
 **16:00-18:00** Integration pass:
 - [x] Local frontend/API checks: 13 frontend tests, 9 backend tests, production build, and browser checks against real simulator/report endpoints.
-- [ ] Run the complete 10-scene demo against the blueprint and fix remaining breakages. The referenced blueprint is not present in this checkout. A provisional script is in `docs/submission/demo-storyboard-draft.md`; reconcile its order and duration when the official blueprint is available.
+- [ ] Run the complete 10-scene demo against the blueprint and fix remaining breakages. The referenced blueprint is not present in this checkout. The provisional read-aloud script is in `docs/submission/video-demo-script.md`; reconcile its order and duration when the official blueprint is available.
 
 **18:00 FEATURE FREEZE.**
 
