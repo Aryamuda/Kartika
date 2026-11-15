@@ -10,7 +10,7 @@ Checked items are implemented and verified locally unless public availability is
 ## Tonight (Sat 14 Nov), target 01:00
 - [x] **C** `backend/app/main.py`: read endpoints over `Store` (`/api/overview`, `/assets`, `/topology`, `/events`, `/events/{id}`, `/incidents`, `/incidents/{id}`), CORS on. Already present on remote main in `f4c60f6`; exercised by the frontend.
 - [x] **C** `/api/ingest/wazuh|suricata` (POST) + `/api/ingest/reset` and `/step`. Verified through actual HTTP requests against an isolated lab process.
-- [ ] **C** Public project link + hosted deployment (Dockerfile, one container serving the built frontend).
+- [x] **C** Public project link + hosted deployment at https://dwirupa.duckdns.org (VPS: Uvicorn systemd service + Nginx + HTTPS; Docker not needed).
 - [x] **B** Vite + React + TS + Tailwind shell, five-page navigation, API client typed from `types.ts`, and Indonesian interface. Connected to the real local API.
 - [x] **A** `backend/app/twin.py` (NetworkX): `simulate(intervention, incident)` and the three presets. Acceptance tests verify isolation with an outage, surgical blocking with residual exposure, and the dominated middle option.
 
@@ -18,7 +18,7 @@ Checked items are implemented and verified locally unless public availability is
 **08:00-12:00**
 - [x] **A + C** `/api/twin/presets|simulate|compare`: engine, `dominated`, `change_set`, observations, and `limitations` connected on the local feature branch. Actual HTTP and browser checks passed.
 - [x] **B** Operations screen (incident list, event feed, replay controls) + Investigation screen (timeline, raw evidence, link reasons, relationship graph).
-- [ ] **C** Deploy first working version to a public URL (by 14:00 latest). Fix hosting issues now, not at 22:00.
+- [x] **C** Deploy first working version to a public URL: https://dwirupa.duckdns.org (API and frontend verified; HTTPS renewal dry-run passed).
 
 **12:00-16:00**
 - [x] **B** Infrastructure screen (asset registry + topology) + Cyber Twin screen (removed-flow graph, 3 preset buttons, comparison table, service status).
@@ -42,7 +42,7 @@ Checked items are implemented and verified locally unless public availability is
 - [ ] **C** Submit on CODEPOLITAN: public project link (hosted app + repo), video, slides. Screenshot the confirmation.
 
 ## Done means
-- [ ] Hosted URL loads without login and shows INC-0001.
+- [x] Hosted URL loads without login and shows INC-0001 (verified by Arya on HTTPS).
 - [x] Replay shows events arriving, then an incident forming (verified locally).
 - [x] All three presets show distinct containment, residual exposure, and service-impact trade-offs on screen, matching the expected-results table; scenario C is dominated by A (real local API).
 - [x] A report downloads for INC-0001 (real local API).
@@ -67,5 +67,5 @@ No autonomous prevention, no attack prediction, no production-grade digital repl
 - Browser checks against the real lab API passed for all three presets and report download, without mock responses.
 - Frontend build is in `frontend/dist/`; run/deployment instructions and verification evidence are in `frontend/README.md` and `frontend/VERIFICATION.md`.
 - [x] **B** Push `feat/aldi-frontend` after approval and open [draft PR #1](https://github.com/Aryamuda/Kartika/pull/1) for Fadil/Arya to review.
-- [ ] **A + C** Review draft PR #1, resolve feedback, and approve merging into main.
-- Public deployment, video, slides, and submission remain outstanding.
+- [x] **A + C** Review draft PR #1 and merge into main (PR #1 and follow-up PR #2 are merged).
+- Public deployment is complete at https://dwirupa.duckdns.org. Video, slides, and submission remain outstanding.
