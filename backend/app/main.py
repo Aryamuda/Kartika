@@ -2,9 +2,12 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import os
+import secrets
 from typing import Any
 
-from fastapi import Body, FastAPI, HTTPException, Query
+from fastapi import Body, FastAPI, HTTPException, Query, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import twin
@@ -14,9 +17,19 @@ from .store import Store
 
 
 app = FastAPI(title="COIP API", version="0.1.0")
+@app.middleware("http")
+async def protect_ingestion(request: Request, call_next):
+    if request.method == "POST" and request.url.path.startswith("/api/ingest/"):
+        token = os.getenv("COIP_OPERATOR_TOKEN", "")
+        supplied = request.headers.get("authorization", "")
+        if not token or not secrets.compare_digest(supplied.encode(), f"Bearer {token}".encode()):
+            return JSONResponse(status_code=403, content={"detail": "Token operator diperlukan untuk mengubah data."})
+    return await call_next(request)
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[origin.strip() for origin in os.getenv("COIP_ALLOWED_ORIGINS", "http://127.0.0.1:5173,http://localhost:5173").split(",") if origin.strip()],
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
@@ -158,14 +171,20 @@ def _records(payload: dict[str, Any] | list[dict[str, Any]]) -> list[dict[str, A
 def ingest_wazuh(
     payload: dict[str, Any] | list[dict[str, Any]] = Body(...),
 ) -> dict[str, list[str]]:
-    return {"event_ids": store.ingest("wazuh", _records(payload))}
+    try:
+        return {"event_ids": store.ingest("wazuh", _records(payload))}
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
 
 
 @app.post("/api/ingest/suricata", status_code=201)
 def ingest_suricata(
     payload: dict[str, Any] | list[dict[str, Any]] = Body(...),
 ) -> dict[str, list[str]]:
-    return {"event_ids": store.ingest("suricata", _records(payload))}
+    try:
+        return {"event_ids": store.ingest("suricata", _records(payload))}
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
 
 
 @app.post("/api/ingest/reset")

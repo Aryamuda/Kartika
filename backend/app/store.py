@@ -10,6 +10,9 @@ import ipaddress
 import json
 import re
 import threading
+from uuid import uuid4
+from copy import deepcopy
+from .models import Event, Incident
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -233,7 +236,11 @@ class Store:
         self.queue: list[tuple[str, dict]] = []
         self.total_queued = 0
         self.mode = "loaded"
+        self.next_event = 1
+        self.next_incident = 1
+        self.initial_load = True
         self.load_all()
+        self.initial_load = False
 
     # ---- fixtures / replay
     def _fixture_records(self) -> list[tuple[str, dict]]:
@@ -255,6 +262,8 @@ class Store:
             self.queue, self.total_queued = [], len(recs)
             self.mode = "loaded"
             self.recompute()
+            for event in self.events:
+                self._append_log(event)
 
     def reset_for_replay(self):
         with self.lock:
@@ -274,6 +283,8 @@ class Store:
                 done += 1
             if done:
                 self.recompute()
+                for event in self.events[-done:]:
+                    self._append_log(event)
             if not self.queue:
                 self.mode = "loaded"
         return done
@@ -292,7 +303,8 @@ class Store:
         norm = normalize_wazuh(raw, self.ctx) if kind == "wazuh" else normalize_suricata(raw, self.ctx)
         if norm is None:
             return None
-        norm["id"] = f"EVT-{len(self.events) + 1:04d}"
+        norm["id"] = f"EVT-{self.next_event:04d}" if self.initial_load else f"EVT-{uuid4().hex}"
+        norm["incident_id"] = None
         norm["raw"] = raw
         norm["provenance"] = {
             "origin": origin,
@@ -301,21 +313,31 @@ class Store:
             "received_at": iso(datetime.now(timezone.utc)),
             "source_location": norm.pop("source_location", None),
         }
+        Event.model_validate(self.public_event(norm, with_raw=True))
+        self.next_event += 1
         self.events.append(norm)
-        self._append_log(norm)
         if recompute:
             self.recompute()
+            self._append_log(norm)
         return norm
 
     def ingest(self, kind: str, records: list[dict], origin: str = "api") -> list[str]:
-        ids = []
         with self.lock:
-            for raw in records:
-                ev = self._ingest_one(kind, raw, origin=origin, recompute=False)
-                if ev:
-                    ids.append(ev["id"])
-            self.recompute()
-        return ids
+            previous = self.events, self.incidents, self.next_event, self.next_incident
+            self.events = deepcopy(self.events)
+            ids = []
+            try:
+                for raw in records:
+                    ev = self._ingest_one(kind, deepcopy(raw), origin=origin, recompute=False)
+                    if ev:
+                        ids.append(ev["id"])
+                self.recompute()
+            except (ValueError, TypeError, KeyError, AttributeError, IndexError, OverflowError) as error:
+                self.events, self.incidents, self.next_event, self.next_incident = previous
+                raise ValueError("Invalid ingestion batch; no records were stored") from error
+            for event in self.events[len(previous[0]):]:
+                self._append_log(event)
+            return ids
 
     def _append_log(self, ev: dict):
         try:
@@ -341,7 +363,19 @@ class Store:
 
     # ---- correlation
     def recompute(self):
-        self.incidents = correlate(self.events, self.ctx)
+        incidents = correlate(self.events, self.ctx)
+        claimed = set()
+        for incident in incidents:
+            old = next((item for item in self.incidents
+                        if item["id"] not in claimed and set(item["seed_event_ids"]) & set(incident["seed_event_ids"])), None)
+            if old:
+                incident["id"] = old["id"]
+            else:
+                incident["id"] = f"INC-{self.next_incident:04d}" if self.initial_load else f"INC-{uuid4().hex}"
+                self.next_incident += 1
+            claimed.add(incident["id"])
+            Incident.model_validate(incident)
+        self.incidents = incidents
         self.apply_incident_ids()
 
     def apply_incident_ids(self):
@@ -423,14 +457,14 @@ def correlate(events: list[dict], ctx: Context) -> list[dict]:
     incidents = []
     for members in groups.values():
         members.sort(key=lambda e: e["ts"])
-        inc_assets = set().union(*(_entity_keys(e) for e in members))
+        inc_assets = {a["asset_id"] for e in members for a in e["assets"]}
         start = members[0]["ts"] - CONTEXT_WINDOW
         end = members[-1]["ts"] + CONTEXT_WINDOW
         member_ids = {e["id"] for e in members}
         context = [
             e
             for e in evs
-            if e["id"] not in member_ids and SEV_RANK[e["severity"]] < SEV_RANK["medium"] and start <= e["ts"] <= end and (_entity_keys(e) & inc_assets)
+            if e["id"] not in member_ids and SEV_RANK[e["severity"]] < SEV_RANK["medium"] and start <= e["ts"] <= end and ({a["asset_id"] for a in e["assets"]} & inc_assets)
         ]
         incidents.append(_build_incident(members, context, ctx))
 
@@ -651,7 +685,7 @@ def _observed_flows(events: list[dict], primary: str | None, ctx: Context) -> li
             continue
         s, d = _node_for_ip(e["src_ip"], ctx), _node_for_ip(e["dst_ip"], ctx)
         for f in flows:
-            if f["src"] == s and f["dst"] == d and f["port"] == e["dst_port"]:
+            if f["src"] == s and f["dst"] == d and f["port"] == e["dst_port"] and f["proto"].lower() == e["proto"]:
                 direction = "inbound" if d == primary else ("outbound" if s == primary else "other")
                 if direction == "outbound":
                     dnode = ctx.assets.get(d)
